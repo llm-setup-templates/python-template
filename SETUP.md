@@ -304,6 +304,10 @@ src = ["src", "tests"]
 select = ["E", "W", "F", "I", "UP", "B", "S", "PERF", "PD", "NPY", "RUF"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+# tests use bare `assert` (pytest idiom); S101 is a bandit rule meant for prod code.
+"tests/**/*.py" = ["S101"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
