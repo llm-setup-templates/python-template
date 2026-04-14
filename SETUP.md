@@ -65,9 +65,24 @@ Select one and follow the branch. The rest of SETUP.md applies identically.
 
 ### Scaffolding Command (all archetypes)
 
+You are already inside `{{PROJECT_NAME}}/` from Phase 0, so initialize the
+current directory in place — do NOT pass a path to `uv init` (that would
+nest `{{PROJECT_NAME}}/{{PROJECT_NAME}}/`).
+
 ```bash
-uv init {{PROJECT_NAME}} --package --python 3.13
-cd {{PROJECT_NAME}}
+uv init --package --python 3.13
+```
+
+Note: `uv init --package` derives the Python package name from the
+**current directory name** by converting hyphens to underscores. So
+`my-project/` → `src/my_project/`. The SNAKE_CASE package name is written
+into `pyproject.toml` as `[project.scripts]` entry; remember it — every
+example below that references `my_project` should read as "your actual
+package name". Define it once:
+
+```bash
+PKG=$(basename "$PWD" | tr '-' '_')
+echo "Using package: $PKG"
 ```
 
 ## 5. Phase 2 — DevDeps Installation
@@ -76,7 +91,8 @@ cd {{PROJECT_NAME}}
 # Choose ONE archetype block:
 
 # [FastAPI Service — default]
-uv add fastapi uvicorn pydantic
+uv add fastapi uvicorn pydantic pydantic-settings
+# FastAPI TestClient depends on httpx — add to dev deps below
 
 # [Library / CLI]
 uv add typer rich
@@ -86,16 +102,22 @@ uv add numpy pandas scipy
 
 # All archetypes: dev dependencies
 uv add --dev ruff basedpyright ty pytest pytest-cov syrupy pre-commit
+
+# FastAPI archetype only: starlette TestClient requires httpx
+uv add --dev httpx
 ```
 
 ## 6. Phase 3 — Config Files
 
 Write the following config files (exact content in Appendix § Config Reference):
 
-- pyproject.toml
+- pyproject.toml (replace every `my_project` literal with `$PKG`)
 - .python-version
 - .pre-commit-config.yaml
 - .coderabbit.yaml
+- .gitignore (see Appendix § .gitignore — `uv init` does not generate one)
+- CLAUDE.md: replace `{{PROJECT_NAME}}` with the actual project name:
+  `sed -i "s/{{PROJECT_NAME}}/$(basename "$PWD")/g" CLAUDE.md`
 
 > **Data-science archetype note**: After writing `pyproject.toml`, apply
 > `examples/pyproject.scientific.toml` basedpyright relaxations:
@@ -176,8 +198,18 @@ git diff --quiet && git diff --cached --quiet || {
 
 ### 11.2 Push + watch CI
 
+The CI workflow triggers on `push` to `main` and on `pull_request` targeting
+`main`. On a brand-new repo created via `gh repo create --source=. --remote=origin`,
+the remote has no `main` yet — you must seed it by pushing your feature branch
+commit into `main`:
+
 ```bash
+# First push: seed remote main from the feature branch commit
+git push origin $(git rev-parse --abbrev-ref HEAD):main
+
+# Subsequent pushes: push the feature branch normally
 git push -u origin $(git rev-parse --abbrev-ref HEAD)
+
 gh run watch
 ```
 
@@ -224,6 +256,10 @@ as complete to the human.
 
 #### pyproject.toml
 
+> Replace every `my_project` below with your actual SNAKE_CASE package name
+> (value of `$PKG`). A quick sed after writing:
+> `sed -i "s/my_project/$PKG/g" pyproject.toml`
+
 ```toml
 [project]
 name = "my_project"
@@ -255,6 +291,8 @@ dev = [
     "pytest-cov>=7.1.0",
     "syrupy>=5.1.0",
     "pre-commit>=4.5.0",
+    # FastAPI archetype: TestClient requires httpx (starlette dep)
+    "httpx>=0.28.0",
 ]
 
 [tool.ruff]
@@ -320,6 +358,46 @@ repos:
 > **Note on `__snapshots__/`**: syrupy snapshot directories are git-tracked
 > (do NOT add to `.gitignore`). Snapshots are test contracts and must be
 > reviewed in PRs. This is the official syrupy recommendation.
+
+#### .gitignore
+
+`uv init` does not generate a `.gitignore`. Write this file in Phase 3:
+
+```
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+*.egg
+.venv/
+venv/
+
+# Testing & coverage
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Type checkers
+.basedpyright/
+.mypy_cache/
+.pyright/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+```
 
 ### § CI Reference
 
