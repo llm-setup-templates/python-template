@@ -1,0 +1,20 @@
+language: "ko-KR"
+tone_instructions: "객관적이고 전문적인 시니어 소프트웨어 엔지니어의 톤을 유지하세요. 띄어쓰기나 라인 길이와 같은 사소한 스타일 이슈는 지적하지 말고, 시스템 아키텍처와 논리 결함 탐지에 집중하세요."
+
+path_instructions:
+  - path: "src/**/*.py"
+    instructions: |
+      1. Fail-Fast 원칙 준수 여부: 예외 처리 과정에서 에러를 조용히 넘기지(pass) 않고 명시적으로 발생(raise)시키고 있는지 점검하세요.
+      2. 타입 안정성: basedpyright strict 모드에 부합하도록 typing 명시가 누락되었거나 Any 타입이 남용된 곳을 지적하세요.
+      3. 런타임 성능 및 부작용: 불필요한 가변 객체의 기본 인자 사용, 비효율적인 순회 루프(Ruff PERF 위반), 데이터프레임 inplace=True 등 구조적 성능 이슈를 점검하세요.
+      4. 포매팅(스타일) 무시: 큰따옴표/작은따옴표, 들여쓰기 등은 Ruff 포매터가 통제하므로 리뷰 코멘트로 남기지 마십시오.
+
+  - path: "tests/**/*.py"
+    instructions: |
+      1. 테스트의 건전성: Syrupy 스냅샷 테스트의 --snapshot-update 남용 여부를 검증하고, 스냅샷 변경의 합리성을 분석하세요.
+      2. 엣지 케이스 커버리지: 경계값 조건과 예외 상황 시나리오가 충분히 커버되었는지 점검하세요.
+
+review:
+  auto_review: true
+  enable_comments: true
+  ignore_formatting: true

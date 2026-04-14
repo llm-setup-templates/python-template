@@ -1,0 +1,24 @@
+# pyproject.scientific.toml — Data-science archetype basedpyright relaxation preset
+# Usage: replace the [tool.pyright] section in your pyproject.toml with the contents
+#        of this file, or uncomment the 3 items below.
+# Reference: DISCUSS.md Q3 / SETUP.md Phase 3 scientific preset note
+#
+# WARNING: Do NOT use this file for FastAPI or Library/CLI archetypes.
+#          Those archetypes use strict mode (default pyproject.toml) without relaxation.
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = true
+reportEmptyAbstractUsage = "error"
+
+# === numpy / pandas / scipy stub incompleteness relaxation ===
+# FastAPI / Library archetype: do NOT use this file.
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+
+[tool.ruff.lint]
+# Data-science archetype: PD/PERF/NPY emphasis (already included in default select)
+select = ["E", "F", "I", "UP", "B", "S", "PERF", "PD", "NPY", "RUF"]
+ignore = ["E501"]

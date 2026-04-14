@@ -1,0 +1,72 @@
+[project]
+name = "my_project"
+version = "0.1.0"
+description = "2026 Python Fail-Fast Scaffolded Project for LLM Agents"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # FastAPI archetype default — remove for Library/Data-science
+    "fastapi>=0.115.0",
+    "uvicorn>=0.32.0",
+    "pydantic>=2.9.0",
+    "pydantic-settings>=2.5",  # environment variable config binding standard
+]
+
+[project.scripts]
+my_project = "my_project.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.0",
+    "basedpyright>=1.39.0",
+    "ty>=0.0.29",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "syrupy>=5.1.0",
+    "pre-commit>=4.5.0",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# DISCUSS Q6: PD + PERF + NPY included (not data-science only — applied globally)
+select = ["E", "W", "F", "I", "UP", "B", "S", "PERF", "PD", "NPY", "RUF"]
+ignore = ["E501"]  # delegated to formatter
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = true
+reportEmptyAbstractUsage = "error"
+
+# === Data-science archetype (numpy/pandas/scipy): uncomment lines below ===
+# Relaxes false positives from incomplete scientific library stubs.
+# FastAPI / Library archetype: keep commented (strict mode default).
+# Full preset: see examples/pyproject.scientific.toml
+# reportUnknownMemberType = false
+# reportUnknownArgumentType = false
+# reportUnknownVariableType = false
+
+[tool.ty.rules]
+# IDE only (ty is NOT included in CI — beta stability concerns)
+call-non-callable = "error"
+override-of-final-method = "error"
+ambiguous-protocol-member = "warn"
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+# DISCUSS Q4: 60 (not research.md §8.2's 80 — initial adoption baseline)
+# Mature-stage target (80) is documented in README coverage ramp guide
+addopts = "--cov=src/my_project --cov-report=term-missing --cov-fail-under=60 -v"
+testpaths = ["tests"]
