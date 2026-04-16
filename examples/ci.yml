@@ -41,6 +41,9 @@ jobs:
       - name: Type check with basedpyright
         run: uv run basedpyright
 
+      - name: Architecture boundary check
+        run: uv run lint-imports
+
   testing:
     name: Unit & Snapshot Tests
     runs-on: ubuntu-latest
