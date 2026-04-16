@@ -31,6 +31,10 @@ For every code change, follow this sequence:
 
 When a snapshot test fails:
 
+> **First-time snapshots**: If this is a brand-new snapshot test (no `.ambr` file exists yet),
+> the "snapshot does not exist" error is expected. Run `uv run pytest --snapshot-update` once
+> to create the baseline, then re-run without `--snapshot-update` to confirm it passes.
+
 ```
 1. Read the failure diff carefully
 2. Ask: "Is this change intentional — did I deliberately change the output?"
@@ -39,6 +43,17 @@ When a snapshot test fails:
 3. After --snapshot-update, review the git diff of snapshot files
    → If the diff looks wrong, revert and fix the code instead
 ```
+
+## Dynamic fields in snapshots
+
+**Never snapshot non-deterministic values** (timestamps, uptime, UUIDs, random IDs).
+If the response contains dynamic fields:
+
+- Exclude them from the snapshot assertion, OR
+- Replace them with a fixed value in the test fixture before asserting, OR
+- Use syrupy matchers to ignore specific keys
+
+Example: `HealthResponse.uptime_seconds` changes every call — snapshot only `status` and `version`.
 
 ## Prohibitions
 
@@ -56,3 +71,5 @@ When adding a new feature (endpoint, service, utility):
 - **Recommended**: integration test if the feature touches I/O (DB, HTTP, filesystem)
 - **Snapshot**: if the feature produces structured output (API response, serialized data), add a snapshot test
 - Follow existing test file naming: `tests/unit/test_{module}.py`, `tests/integration/test_{module}.py`
+- **Match existing structure**: Before creating subdirectories (`tests/unit/`, `tests/integration/`), check if the project uses a flat layout (`tests/test_*.py`). Follow the existing convention.
+- **Match existing patterns**: Check whether existing tests use sync `TestClient` or async `pytest-anyio`/`httpx.AsyncClient`. New tests must use the same pattern for consistency.

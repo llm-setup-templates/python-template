@@ -146,6 +146,7 @@ async def health_check() -> HealthResponse:
 
 - Do NOT run `--snapshot-update` without reading the diff first
 - Do NOT delete the snapshot test because it failed
+- Do NOT snapshot `uptime_seconds` directly — it changes every call. Snapshot only deterministic fields (`status`, `version`), or use a syrupy matcher to ignore dynamic keys
 
 ---
 
