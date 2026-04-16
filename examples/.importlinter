@@ -1,0 +1,20 @@
+[importlinter]
+root_package = my_project
+
+[importlinter:contract:layered-architecture]
+name = Layered Architecture
+type = layers
+layers =
+    my_project.routers
+    my_project.services
+    my_project.repositories
+
+[importlinter:contract:service-purity]
+name = Service Layer Purity
+type = forbidden
+source_modules =
+    my_project.services
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    httpx

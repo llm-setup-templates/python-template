@@ -6,13 +6,13 @@ After any code change, the agent MUST run the verification loop:
 ```
 uv run ruff format --check .                                 → format check
 uv run basedpyright                                          → type check
-# no separate static analysis step — Ruff handles E/F/B/S/UP rules inline
+uv run lint-imports                                          → architecture boundary check (Import Linter)
 uv run ruff check .                                          → lint
-uv run pytest                                                → tests (--cov-fail-under=60 via pyproject.toml)
+uv run pytest                                                → tests
 uv build                                                     → build
 ```
 
-> Python 템플릿은 `{{OVERRIDE_STATIC_ANALYSIS_COMMANDS}}` 슬롯을 주석으로 치환한다. Ruff가 lint + format을 통합 처리하므로 별도 단계가 불필요.
+> Python 템플릿은 `{{OVERRIDE_STATIC_ANALYSIS_COMMANDS}}` 슬롯을 주석으로 치환한다. Ruff가 lint + format을 통합 처리하며, Import Linter가 아키텍처 경계 정적 분석 슬롯을 담당한다.
 > 각 슬롯은 단일 명령을 수용하며, 실패 시 즉시 중단(fail-fast)한다.
 
 Execution order is fail-fast: stop at the first failure.

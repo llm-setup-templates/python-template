@@ -26,7 +26,7 @@ Python 3.13 project template: uv + Ruff + basedpyright strict + pytest (FastAPI 
 
 ## Architecture Summary
 See `.claude/rules/architecture.md` for full rules.
-src/ layout (uv init --package) with FastAPI router/service/repository layering or Library CLI (typer) or Data-science (numpy/pandas pipeline). All archetypes share the same 14-section SETUP.md; Phase 1 Archetype Switch selects the branch. Type safety enforced by basedpyright strict in CI; ty provides IDE-level hints. Ruff unifies formatting and linting. Coverage gate at 60% (initial), ramp to 80% per PR guidance.
+src/ layout (uv init --package) with **fastapi-practice style layered architecture**. FastAPI archetype: `routers/ → services/ → repositories/` with `core/` providing HTTP status-based exception hierarchy (`AppException` → `NotFoundException` → `UserNotFoundException`), Loguru structured logging (JSON/console by environment), and ContextVar-based trace ID. Error responses unified via `ErrorResponse` schema + 4 global exception handlers (`handlers/exception.py`). Success responses use `response_model=Schema` directly (FastAPI standard — no wrapper). Import boundaries in `.claude/rules/architecture.md`; enforcement via Import Linter (`examples/.importlinter`). Type safety: basedpyright strict (CI). Ruff formatting + linting. Coverage gate 60%.
 
 ## Verification Rules
 After any code change, run the full verification loop.
