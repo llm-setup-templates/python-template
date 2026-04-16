@@ -21,4 +21,9 @@ def main() -> None:
     """CLI entry point for uvicorn."""
     import uvicorn
 
-    uvicorn.run("my_project.main:app", host="0.0.0.0", port=8000, reload=False)  # noqa: S104
+    uvicorn.run(
+        "my_project.main:app",
+        host="0.0.0.0",  # noqa: S104
+        port=8000,
+        reload=False,
+    )
