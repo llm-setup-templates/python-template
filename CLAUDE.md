@@ -33,6 +33,20 @@ After any code change, run the full verification loop.
 Never declare a task complete until it passes.
 See `.claude/rules/verification-loop.md`.
 
+## Test Modification
+
+When modifying code, always update tests in the same commit. Determine affected test layers:
+
+- **Endpoint/feature added** → create unit + integration + snapshot tests
+- **Signature/schema changed** → update existing assertions and fixtures
+- **Logic modified** → update assertions, add edge cases
+- **Dependency bumped** → review snapshot diff before `--snapshot-update`
+- **Refactoring only** → do NOT touch tests; if they break, the refactoring is wrong
+
+Snapshot rule: **never `--snapshot-update` without reading the diff first**.
+
+Full rules and checklist: `.claude/rules/test-modification.md`
+
 ## Git Workflow
 - Never commit directly to `main`
 - Conventional Commits required
