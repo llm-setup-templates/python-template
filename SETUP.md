@@ -109,9 +109,14 @@ uv add --dev httpx
 
 ## 6. Phase 3 — Config Files
 
-Write the following config files (exact content in Appendix § Config Reference):
+Write the following config files (exact content in Appendix § Config Reference).
 
-- pyproject.toml (replace every `my_project` literal with `$PKG`)
+> **IMPORTANT**: `uv init --package` from Phase 1 already generated a
+> `pyproject.toml` using `uv_build` as the build backend. You MUST
+> **overwrite** (not merge) that file with the Appendix content below,
+> which uses `hatchling`. After overwriting, re-run `uv sync` once.
+
+- pyproject.toml — **replace** the uv-generated file; then substitute every `my_project` literal with `$PKG`
 - .python-version
 - .pre-commit-config.yaml
 - .coderabbit.yaml
@@ -169,7 +174,18 @@ All checks must pass before Phase 8.
 
 ## 11. Phase 8 — First Push + CI Green
 
-### 11.1 Git Safety Gate (MANDATORY — run before push)
+### 11.1 Initial commit (required before Gate 1)
+
+Gate 1 calls `git rev-parse --abbrev-ref HEAD` which requires at least
+one commit to exist. On a fresh `git init` repo there is no HEAD yet,
+so stage and commit all scaffolded files first:
+
+```bash
+git add .
+git commit -m "feat(scaffold): initial project setup"
+```
+
+### 11.2 Git Safety Gate (MANDATORY — run before push)
 
 ```bash
 # Gate 1: branch check
@@ -196,7 +212,7 @@ git diff --quiet && git diff --cached --quiet || {
 }
 ```
 
-### 11.2 Push + watch CI
+### 11.3 Push + watch CI
 
 The CI workflow triggers on `push` to `main` and on `pull_request` targeting
 `main`. On a brand-new repo created via `gh repo create --source=. --remote=origin`,
@@ -213,7 +229,7 @@ git push -u origin $(git rev-parse --abbrev-ref HEAD)
 gh run watch
 ```
 
-### 11.3 Success Declaration
+### 11.4 Success Declaration
 
 Only after `gh run watch` reports all jobs green, you may report the task
 as complete to the human.
