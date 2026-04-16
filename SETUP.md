@@ -121,6 +121,7 @@ Write the following config files (exact content in Appendix § Config Reference)
 - .pre-commit-config.yaml
 - .coderabbit.yaml
 - .gitignore (see Appendix § .gitignore — `uv init` does not generate one)
+- pyrightconfig.json — exclude `examples/` from basedpyright scan (see Appendix)
 - CLAUDE.md: replace `{{PROJECT_NAME}}` with the actual project name:
   `sed -i "s/{{PROJECT_NAME}}/$(basename "$PWD")/g" CLAUDE.md`
 
@@ -315,6 +316,7 @@ dev = [
 target-version = "py313"
 line-length = 88
 src = ["src", "tests"]
+exclude = ["examples"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "UP", "B", "S", "PERF", "PD", "NPY", "RUF"]
@@ -417,6 +419,17 @@ coverage.xml
 # OS
 .DS_Store
 Thumbs.db
+```
+
+#### pyrightconfig.json
+
+> The `examples/` directory contains reference code that may not pass
+> basedpyright strict mode. Exclude it from type checking:
+
+```json
+{
+  "exclude": ["examples", ".venv"]
+}
 ```
 
 ### § CI Reference
