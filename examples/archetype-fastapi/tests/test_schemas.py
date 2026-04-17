@@ -1,6 +1,8 @@
 """Tests for schemas/error.py — Pydantic error response schemas."""
 
 import pytest
+from pydantic import ValidationError
+
 from my_project.schemas.error import (
     ErrorResponse,
     ValidationErrorDetail,
@@ -40,12 +42,12 @@ class TestErrorResponse:
         assert "details" in dumped
 
     def test_validation_requires_error_code(self) -> None:
-        with pytest.raises(Exception):
-            ErrorResponse(message="msg")  # type: ignore[call-arg]
+        with pytest.raises(ValidationError):
+            ErrorResponse.model_validate({"message": "msg"})
 
     def test_validation_requires_message(self) -> None:
-        with pytest.raises(Exception):
-            ErrorResponse(error_code="err")  # type: ignore[call-arg]
+        with pytest.raises(ValidationError):
+            ErrorResponse.model_validate({"error_code": "err"})
 
 
 class TestValidationErrorDetail:
