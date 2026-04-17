@@ -1,3 +1,5 @@
 """Core module — config, exceptions, logging, context."""
 
-__all__ = ["config", "context", "exceptions", "logging"]
+from . import context, exceptions, logging
+
+__all__ = ["context", "exceptions", "logging"]
