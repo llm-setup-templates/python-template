@@ -1,4 +1,5 @@
 """Global exception handlers — convert all exceptions to ErrorResponse."""
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -34,7 +35,9 @@ async def handle_app_exception(request: Request, exc: AppException) -> JSONRespo
     )
 
 
-async def handle_validation_exception(request: Request, exc: RequestValidationError) -> JSONResponse:
+async def handle_validation_exception(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     """Handle Pydantic / FastAPI request validation errors (422)."""
     trace_id = get_trace_id()
     errors = [
@@ -55,7 +58,9 @@ async def handle_validation_exception(request: Request, exc: RequestValidationEr
     )
 
 
-async def handle_http_exception(request: Request, exc: StarletteHTTPException) -> JSONResponse:
+async def handle_http_exception(
+    request: Request, exc: StarletteHTTPException
+) -> JSONResponse:
     """Handle Starlette / FastAPI HTTP exceptions."""
     trace_id = get_trace_id()
     return JSONResponse(
@@ -72,7 +77,9 @@ async def handle_http_exception(request: Request, exc: StarletteHTTPException) -
 async def handle_unhandled_exception(request: Request, exc: Exception) -> JSONResponse:
     """Catch-all handler for unexpected exceptions — returns 500."""
     trace_id = get_trace_id()
-    logger.bind(trace_id=trace_id, path=request.url.path).exception("Unhandled exception")
+    logger.bind(trace_id=trace_id, path=request.url.path).exception(
+        "Unhandled exception"
+    )
     return JSONResponse(
         status_code=500,
         content=ErrorResponse(

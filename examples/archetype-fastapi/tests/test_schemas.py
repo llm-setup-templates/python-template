@@ -52,7 +52,9 @@ class TestErrorResponse:
 
 class TestValidationErrorDetail:
     def test_fields(self) -> None:
-        detail = ValidationErrorDetail(field="email", message="올바른 이메일 형식이 아닙니다", type="value_error")
+        detail = ValidationErrorDetail(
+            field="email", message="올바른 이메일 형식이 아닙니다", type="value_error"
+        )
         assert detail.field == "email"
         assert detail.message == "올바른 이메일 형식이 아닙니다"
         assert detail.type == "value_error"
@@ -72,7 +74,9 @@ class TestValidationErrorResponse:
         assert resp.errors == []
 
     def test_with_errors(self) -> None:
-        errors = [ValidationErrorDetail(field="name", message="필수 항목", type="missing")]
+        errors = [
+            ValidationErrorDetail(field="name", message="필수 항목", type="missing")
+        ]
         resp = ValidationErrorResponse(errors=errors)
         assert len(resp.errors) == 1
         assert resp.errors[0].field == "name"

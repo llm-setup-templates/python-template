@@ -1,4 +1,5 @@
 """Standardized error response schemas."""
+
 from pydantic import BaseModel, Field
 
 
