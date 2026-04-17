@@ -2,6 +2,7 @@
 import logging
 import sys
 from pathlib import Path
+from typing import override
 
 from loguru import logger
 
@@ -20,6 +21,7 @@ def setup_logging(debug: bool = False) -> None:
     logger.add(log_dir / "error.log", level="ERROR", rotation="10 MB", retention="7 days", serialize=True)
 
     class InterceptHandler(logging.Handler):
+        @override
         def emit(self, record: logging.LogRecord) -> None:
             try:
                 level = logger.level(record.levelname).name
