@@ -86,7 +86,7 @@ async def handle_unhandled_exception(request: Request, exc: Exception) -> JSONRe
 
 def register_exception_handlers(app: FastAPI) -> None:
     """Register all exception handlers on the FastAPI application."""
-    app.add_exception_handler(AppException, handle_app_exception)  # type: ignore[arg-type]
-    app.add_exception_handler(RequestValidationError, handle_validation_exception)  # type: ignore[arg-type]
-    app.add_exception_handler(StarletteHTTPException, handle_http_exception)  # type: ignore[arg-type]
+    app.add_exception_handler(AppException, handle_app_exception)  # pyright: ignore[reportArgumentType]
+    app.add_exception_handler(RequestValidationError, handle_validation_exception)  # pyright: ignore[reportArgumentType]
+    app.add_exception_handler(StarletteHTTPException, handle_http_exception)  # pyright: ignore[reportArgumentType]
     app.add_exception_handler(Exception, handle_unhandled_exception)
