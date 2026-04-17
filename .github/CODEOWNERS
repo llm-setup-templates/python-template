@@ -1,0 +1,25 @@
+# CODEOWNERS — auto-assigns reviewers based on changed paths.
+# https://docs.github.com/en/repositories/managing-your-repositories-settings-and-customization/customizing-your-repository/about-code-owners
+#
+# Replace `@YOUR_ORG/*` with real GitHub team or user handles before
+# relying on this file. Teams must be members of the repository.
+
+# Default — fallback when no more specific rule matches
+*                                           @YOUR_ORG/engineering
+
+# Architecture-critical — require architect review
+/docs/architecture/decisions/               @YOUR_ORG/architects
+/src/*/core/                                @YOUR_ORG/architects
+/examples/.importlinter                     @YOUR_ORG/architects
+
+# Infrastructure-critical — require devops review
+/.github/                                   @YOUR_ORG/devops
+/pyproject.toml                             @YOUR_ORG/devops
+/.pre-commit-config.yaml                    @YOUR_ORG/devops
+/.python-version                            @YOUR_ORG/devops
+/pyrightconfig.json                         @YOUR_ORG/devops
+
+# Feature domains — replace with your team handles as they emerge
+# /src/*/routers/                           @YOUR_ORG/api-team
+# /src/*/services/                          @YOUR_ORG/domain-team
+# /src/*/repositories/                      @YOUR_ORG/data-team
