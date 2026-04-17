@@ -453,6 +453,10 @@ as complete to the human.
 | `basedpyright: reportUnknownMemberType` mass errors | numpy/scipy incomplete stubs | Data-science archetype → apply `examples/pyproject.scientific.toml` |
 | `syrupy: snapshot file missing` — test FAILED | Snapshot not yet generated | `uv run pytest --snapshot-update` once then re-run (floating-point results: use `numpy.testing.assert_allclose` instead) |
 | `ruff check .` vs `ruff check.` | Missing space (research.md source bug) | Always `ruff check .` (space before dot is required) |
+| `basedpyright` reports `reportImplicitOverride` on subclass methods | missing `@override` decorator | add `from typing import override` and decorate the overriding method with `@override` |
+| `basedpyright` reports `reportCallIssue` on `Field(None, ...)` | pydantic `Field()` positional-default ambiguity under strict | change to `= None` or `Field(default=None, description=...)` |
+| `# type: ignore[...]` not honored by basedpyright | pyright/basedpyright use a different ignore-comment syntax from mypy | use `# pyright: ignore[ruleName]` (e.g. `# pyright: ignore[reportArgumentType]`) |
+| `lint-imports` reports `Missing layer 'my_project.routers'` | Import Linter contract references a module that does not exist | add a stub `src/my_project/routers/__init__.py` (and likewise for `services`, `repositories`) |
 
 ## 13. Essential Checklist
 
