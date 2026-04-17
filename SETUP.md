@@ -25,7 +25,7 @@ from top to bottom.
 - [ ] GitHub repository created and first commit pushed
 - [ ] All CI jobs pass on the first push
 - [ ] CodeRabbit app connected (or fallback configured)
-- [ ] Local `uv run ruff check . && uv run ruff format --check . && uv run basedpyright && uv run pytest` passes from a fresh clone
+- [ ] Local `uv run ruff check . && uv run ruff format --check . && uv run basedpyright && uv run lint-imports && uv run pytest` passes from a fresh clone
 
 ## 2. Prerequisites
 - `gh` CLI authenticated (`gh auth status`)
@@ -101,7 +101,7 @@ uv add typer rich
 uv add numpy pandas scipy
 
 # All archetypes: dev dependencies
-uv add --dev ruff basedpyright ty pytest pytest-cov syrupy pre-commit
+uv add --dev ruff basedpyright ty pytest pytest-cov syrupy pre-commit import-linter
 
 # FastAPI archetype only: starlette TestClient requires httpx
 uv add --dev httpx
@@ -162,8 +162,18 @@ Write `.github/workflows/ci.yml` (exact content in Appendix § CI Reference).
 ## 10. Phase 7 — Local Verify (fail-fast)
 
 ```bash
-uv run ruff check . && uv run ruff format --check . && uv run basedpyright && uv run pytest
+uv run ruff check . \
+  && uv run ruff format --check . \
+  && uv run basedpyright \
+  && uv run lint-imports \
+  && uv run pytest
 ```
+
+> **Step order rationale**: Import Linter (`lint-imports`) runs between
+> type checking and tests so architectural boundary violations
+> (`services/` importing `sqlalchemy`, routers bypassing services) fail
+> fast — before any test cost. Matches CI step order in Appendix § CI
+> Reference.
 
 All checks must pass before Phase 8.
 
@@ -251,7 +261,7 @@ as complete to the human.
 - [ ] Python version verified (≥ 3.13)
 - [ ] Scaffolding command ran in an empty or newly-created directory
 - [ ] All config files written
-- [ ] `uv run ruff check . && uv run ruff format --check . && uv run basedpyright && uv run pytest` passes locally
+- [ ] `uv run ruff check . && uv run ruff format --check . && uv run basedpyright && uv run lint-imports && uv run pytest` passes locally
 - [ ] Git Safety Gate passed
 - [ ] `gh run watch` shows green CI
 - [ ] CodeRabbit app installed or fallback configured
@@ -268,6 +278,7 @@ as complete to the human.
 | pytest-cov | 7.1.0 |
 | syrupy | 5.1.0 |
 | pre-commit | 4.5.x |
+| import-linter | 2.1+ |
 
 ### § Config File Contents
 
@@ -308,6 +319,7 @@ dev = [
     "pytest-cov>=7.1.0",
     "syrupy>=5.1.0",
     "pre-commit>=4.5.0",
+    "import-linter>=2.1",
     # FastAPI archetype: TestClient requires httpx (starlette dep)
     "httpx>=0.28.0",
 ]

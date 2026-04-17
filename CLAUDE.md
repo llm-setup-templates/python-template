@@ -20,9 +20,10 @@ Python 3.13 project template: uv + Ruff + basedpyright strict + pytest (FastAPI 
 - Format check: `uv run ruff format .`
 - Lint: `uv run ruff check .`
 - Type check: `uv run basedpyright`
+- Architecture check: `uv run lint-imports`
 - Test: `uv run pytest`
 - Build: `uv build`
-- Full verify: `uv run ruff check . && uv run ruff format --check . && uv run basedpyright && uv run pytest`
+- Full verify: `uv run ruff check . && uv run ruff format --check . && uv run basedpyright && uv run lint-imports && uv run pytest`
 
 ## Architecture Summary
 See `.claude/rules/architecture.md` for full rules.
