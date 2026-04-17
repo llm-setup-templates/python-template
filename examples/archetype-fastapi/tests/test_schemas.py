@@ -1,7 +1,6 @@
 """Tests for schemas/error.py — Pydantic error response schemas."""
 
 import pytest
-
 from my_project.schemas.error import (
     ErrorResponse,
     ValidationErrorDetail,

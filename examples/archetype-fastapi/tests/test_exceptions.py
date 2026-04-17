@@ -1,7 +1,6 @@
 """Tests for core/exceptions.py — AppException hierarchy."""
 
 import pytest
-
 from my_project.core.exceptions import (
     AppException,
     BadRequestException,
