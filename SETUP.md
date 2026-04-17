@@ -629,6 +629,7 @@ Full content of `examples/.importlinter` (for reference):
 ```ini
 [importlinter]
 root_package = my_project
+include_external_packages = True
 
 [importlinter:contract:layered-architecture]
 name = Layered Architecture

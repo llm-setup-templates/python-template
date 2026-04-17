@@ -3,7 +3,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
+from my_project.handlers.exception import register_exception_handlers
+
 app = FastAPI(title="my_project", version="0.1.0")
+register_exception_handlers(app)
 
 
 class HealthResponse(BaseModel):
