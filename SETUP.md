@@ -152,7 +152,6 @@ Write the following config files (exact content in Appendix § Config Reference)
 - .pre-commit-config.yaml
 - .coderabbit.yaml
 - .gitignore (see Appendix § .gitignore — `uv init` does not generate one)
-- pyrightconfig.json — exclude `examples/` from basedpyright scan (see Appendix)
 - .importlinter — architecture boundary contracts (see Appendix § .importlinter):
   `cp /tmp/ref-python/examples/.importlinter .`
   Then substitute every `my_project` literal with `$PKG`:
@@ -551,6 +550,7 @@ pythonVersion = "3.13"
 typeCheckingMode = "strict"
 reportMissingTypeStubs = true
 reportEmptyAbstractUsage = "error"
+exclude = ["examples", ".venv"]  # basedpyright scan에서 제외 (pyrightconfig.json 불필요)
 # reportUnknownMemberType = false   # data-science archetype only
 # reportUnknownArgumentType = false # data-science archetype only
 # reportUnknownVariableType = false # data-science archetype only
@@ -635,17 +635,6 @@ coverage.xml
 # OS
 .DS_Store
 Thumbs.db
-```
-
-#### pyrightconfig.json
-
-> The `examples/` directory contains reference code that may not pass
-> basedpyright strict mode. Exclude it from type checking:
-
-```json
-{
-  "exclude": ["examples", ".venv"]
-}
 ```
 
 ### § .importlinter Reference
