@@ -50,6 +50,9 @@ path used in Phase 0, the new repo is empty — these files do NOT exist
 yet. Clone the template as a **read-only reference**:
 
 ```bash
+# Pre-cleanup: remove stale reference from previous sessions
+rm -rf /tmp/ref-python
+
 gh repo clone llm-setup-templates/python-template /tmp/ref-python
 ```
 
