@@ -119,7 +119,7 @@ echo "Using package: $PKG"
 # Choose ONE archetype block:
 
 # [FastAPI Service — default]
-uv add fastapi uvicorn pydantic pydantic-settings
+uv add fastapi uvicorn pydantic pydantic-settings loguru
 # FastAPI TestClient depends on httpx — add to dev deps below
 
 # [Library / CLI]
@@ -471,6 +471,7 @@ dependencies = [
     "uvicorn>=0.32.0",
     "pydantic>=2.9.0",
     "pydantic-settings>=2.5",
+    "loguru>=0.7.0",
 ]
 
 [project.scripts]
