@@ -26,13 +26,13 @@ def register_exception_handlers(app: FastAPI) -> None:
         errors = [ValidationErrorDetail(field=".".join(str(loc) for loc in e["loc"][1:]) or "body",
             message=e["msg"], type=e["type"]) for e in exc.errors()]
         return JSONResponse(status_code=422,
-            content=ValidationErrorResponse(trace_id=trace_id, errors=errors).model_dump())
+            content=ValidationErrorResponse(trace_id=trace_id, errors=errors, details=None).model_dump())
 
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
         trace_id = get_trace_id()
         return JSONResponse(status_code=exc.status_code,
-            content=ErrorResponse(error_code="http_error", message=str(exc.detail), trace_id=trace_id).model_dump())
+            content=ErrorResponse(error_code="http_error", message=str(exc.detail), trace_id=trace_id, details=None).model_dump())
 
     @app.exception_handler(Exception)
     async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
@@ -40,4 +40,4 @@ def register_exception_handlers(app: FastAPI) -> None:
         logger.bind(trace_id=trace_id, path=request.url.path).exception("Unhandled exception")
         return JSONResponse(status_code=500,
             content=ErrorResponse(error_code="internal_server_error",
-                message="서버 오류가 발생했습니다", trace_id=trace_id).model_dump())
+                message="서버 오류가 발생했습니다", trace_id=trace_id, details=None).model_dump())

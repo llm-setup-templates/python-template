@@ -42,6 +42,34 @@ git init -b main
 gh repo create {{PROJECT_NAME}} --private --source=. --remote=origin
 ```
 
+## 3.1 Phase 0.5 — Clone Template Reference
+
+Throughout Phases 2~6 the agent copies files from `examples/`, `docs/`,
+`.github/`, and other template-owned directories. In the `--source=.`
+path used in Phase 0, the new repo is empty — these files do NOT exist
+yet. Clone the template as a **read-only reference**:
+
+```bash
+gh repo clone llm-setup-templates/python-template /tmp/ref-python
+```
+
+Throughout this document, when instructed to copy from `examples/X`,
+use `cp /tmp/ref-python/examples/X .` (not `cp examples/X .`).
+
+Clean up after Phase 8:
+
+```bash
+rm -rf /tmp/ref-python
+```
+
+> **Alternative (`--template` path)**: If you started with
+> `gh repo create --template ...` instead of Phase 0's `--source=.`, the
+> template files are already in your repo and Phase 0.5 is not needed.
+> However, the `--template` path has a drawback: GitHub auto-creates an
+> "Initial commit" message that violates the Conventional Commits gate
+> in Phase 8. For LLM autonomous flows, **`--source=.` (Phase 0) is the
+> recommended path**.
+
 ## 4. Phase 1 — Choose Your Archetype & Scaffolding
 
 ### Phase 1 — Choose Your Archetype
@@ -91,7 +119,7 @@ echo "Using package: $PKG"
 # Choose ONE archetype block:
 
 # [FastAPI Service — default]
-uv add fastapi uvicorn pydantic pydantic-settings
+uv add fastapi uvicorn pydantic pydantic-settings loguru
 # FastAPI TestClient depends on httpx — add to dev deps below
 
 # [Library / CLI]
@@ -122,6 +150,10 @@ Write the following config files (exact content in Appendix § Config Reference)
 - .coderabbit.yaml
 - .gitignore (see Appendix § .gitignore — `uv init` does not generate one)
 - pyrightconfig.json — exclude `examples/` from basedpyright scan (see Appendix)
+- .importlinter — architecture boundary contracts (see Appendix § .importlinter):
+  `cp /tmp/ref-python/examples/.importlinter .`
+  Then substitute every `my_project` literal with `$PKG`:
+  `sed -i "s/my_project/$PKG/g" .importlinter`
 - CLAUDE.md: replace `{{PROJECT_NAME}}` with the actual project name:
   `sed -i "s/{{PROJECT_NAME}}/$(basename "$PWD")/g" CLAUDE.md`
 
@@ -199,7 +231,15 @@ The agent's job is not to generate these files — they ship with the
 template. The agent's job is to **trim modules the human doesn't want**,
 customize **placeholders**, and then register the decision.
 
-### 8.5.1 Ask the human which modules to keep
+### 8.5.1 Module selection
+
+The docs/ structure has 4 modules: core (always), reports, briefings, extended.
+
+**In autonomous/LLM mode** (default for this template): use `core` only.
+Skip trimming the other modules if they don't exist yet (valid under the
+`--source=.` path).
+
+**In interactive mode**: ask the human to confirm the selection:
 
 ```
 Documentation modules to keep (default = core only):
@@ -208,6 +248,18 @@ Documentation modules to keep (default = core only):
 - briefings  [y/n]          dated, frozen interview & talk archives
 - extended   [y/n]          C4 Lv2 containers / DFD / Extended DD
 ```
+
+| Module | Default | Include condition |
+|--------|---------|-------------------|
+| core | YES | always |
+| reports | NO | user confirms OR `--with-reports` passed |
+| briefings | NO | user confirms OR `--with-briefings` passed |
+| extended | NO | user confirms OR `--with-extended` passed |
+
+**Source-mode note**: If your repo came from Phase 0 `--source=.`, the
+docs/ folder is empty by default. Copy from `/tmp/ref-python/docs/` in
+core-only mode (see Phase 0.5). If you started from `--template`,
+docs/ is pre-populated and 5.5 becomes trim-only.
 
 ### 8.5.2 Trim unwanted modules
 
@@ -280,6 +332,18 @@ uv run ruff check . \
 > (`services/` importing `sqlalchemy`, routers bypassing services) fail
 > fast — before any test cost. Matches CI step order in Appendix § CI
 > Reference.
+
+### Fix permissions during verify
+
+If a step fails, you MAY run the fix variant once, then re-run the check:
+
+| Failed step | Allowed fix | Re-check |
+|---|---|---|
+| `uv run ruff check .` | `uv run ruff check --fix .` | `uv run ruff check .` |
+| `uv run ruff format --check .` | `uv run ruff format .` | `uv run ruff format --check .` |
+
+Fixes are part of the normal iteration loop. They do NOT count against the
+3-attempt retry budget.
 
 All checks must pass before Phase 8.
 
@@ -407,6 +471,7 @@ dependencies = [
     "uvicorn>=0.32.0",
     "pydantic>=2.9.0",
     "pydantic-settings>=2.5",
+    "loguru>=0.7.0",
 ]
 
 [project.scripts]
@@ -549,6 +614,45 @@ Thumbs.db
   "exclude": ["examples", ".venv"]
 }
 ```
+
+### § .importlinter Reference
+
+Copy from the template reference and substitute the package name:
+
+```bash
+cp /tmp/ref-python/examples/.importlinter .
+sed -i "s/my_project/$PKG/g" .importlinter
+```
+
+Full content of `examples/.importlinter` (for reference):
+
+```ini
+[importlinter]
+root_package = my_project
+
+[importlinter:contract:layered-architecture]
+name = Layered Architecture
+type = layers
+layers =
+    my_project.routers
+    my_project.services
+    my_project.repositories
+
+[importlinter:contract:service-purity]
+name = Service Layer Purity
+type = forbidden
+source_modules =
+    my_project.services
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    httpx
+```
+
+> **FastAPI archetype note**: The `layered-architecture` contract enforces
+> `routers → services → repositories` import direction.
+> The `service-purity` contract prohibits framework imports in the service
+> layer so business logic stays framework-agnostic.
 
 ### § CI Reference
 
