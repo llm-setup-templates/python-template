@@ -1,134 +1,108 @@
-# python-template
+# Python Template — LLM-Agent-Ready Scaffolding
 
-> LLM-agent-driven project scaffolding template for Python 3.13.
-> Hand `SETUP.md` to Claude Code / Cursor and get a green CI pipeline on GitHub.
+[한국어 README](./README.ko.md)
 
-[![CI](https://github.com/gs071 (개인) 또는 조직명/python-template/actions/workflows/ci.yml/badge.svg)](https://github.com/gs071 (개인) 또는 조직명/python-template/actions/workflows/ci.yml)
-[![CodeRabbit](https://img.shields.io/badge/CodeRabbit-Active-brightgreen)](https://coderabbit.ai)
-[![License](https://img.shields.io/badge/License-MIT-blue)](LICENSE)
+> An opinionated Python 3.13 project template designed for LLM coding agents
+> (Claude Code / Cursor) to scaffold from an empty directory to a green GitHub
+> Actions CI — without human intervention mid-setup.
 
-## Purpose
+**Empirically verified**: SETUP.md alone drives Claude Code → green CI in 35 min
+([proof run](https://github.com/KWONSEOK02/llm-setup-e2e17-python/actions/runs/24566234342)).
 
-A 2026-caliber Python project setup prompt for LLM agents (Claude Code / Cursor). Covers three archetypes — FastAPI service, Library/CLI, and Data-science — using uv, Ruff, basedpyright strict, syrupy, and a 2-job GitHub Actions CI pipeline with CodeRabbit integration. All steps are non-interactive and fail-fast, so the agent completes setup from an empty directory to CI green on the first push without human intervention.
-
-## Who is this for
-- Developers using Claude Code / Cursor who want a reproducible Python project scaffold
-- Students / teams learning modern Python tooling in one shot
-- Teams migrating from black+isort+mypy to the 2026 Ruff+basedpyright stack
-
-## Quick Start
-
-```bash
-# 1. Fork or clone this template into your target workspace
-
-# 2. Choose archetype (see SETUP.md Phase 1)
-#    FastAPI Service (default) / Library CLI / Data-science
-
-# 3. Hand SETUP.md to Claude Code
-# Ask: "Please set up a new Python project using SETUP.md"
-# The agent executes Phase 0 → Phase 8 non-interactively.
-# All phases are fail-fast; CI goes green on first push.
-
-# Manual equivalent (FastAPI archetype):
-uv init my_project --package --python 3.13
-cd my_project
-uv add fastapi uvicorn pydantic pydantic-settings
-uv add --dev ruff basedpyright ty pytest pytest-cov syrupy pre-commit
-```
-
-## What's Inside
-- `SETUP.md` — the main prompt (14 sections)
-- `CLAUDE.md` — base CLAUDE.md for the generated project
-- `.claude/rules/` — modular AI behavior rules (code-style, git, architecture, verification)
-- `examples/` — ready-to-copy config file snippets
-  - `pyproject.toml` — full integrated config (Ruff 11-rule select, basedpyright strict, pytest cov-fail-under=60)
-  - `pyproject.scientific.toml` — Data-science archetype basedpyright relaxation preset
-  - `.python-version`, `.pre-commit-config.yaml`, `ci.yml`, `.coderabbit.yaml`
-  - `archetype-fastapi/` — FastAPI ASGI app + TestClient fixture + health check test
-  - `archetype-library/` — Library/CLI with typer app + `__all__` public API
-  - `archetype-data-science/` — numpy/pandas pipeline + `tests/regression/` (no syrupy)
-
-## Phase Overview (14 sections in SETUP.md)
-1. Preface + LLM meta-instructions
-2. Prerequisites
-3. Phase 0 — Repo Init
-4. Phase 1 — Archetype Selection + Scaffolding
-5. Phase 2 — DevDeps (archetype-specific)
-6. Phase 3 — Config Files
-7. Phase 4 — Scripts
-8. Phase 5 — CI Workflow
-9. Phase 6 — CodeRabbit
-10. Phase 7 — Local Verify
-11. Phase 8 — First Push + CI Green
-12. Troubleshooting
-13. Essential Checklist
-14. Config Reference Appendix
-
-## Coverage Ramp Guide
-
-This template defaults to `--cov-fail-under=60` (initial adoption baseline).
-
-| Stage | Threshold | How |
-|-------|-----------|-----|
-| Initial | 60% | This template default |
-| Intermediate | 70% | After first sprint, raise in pyproject.toml |
-| Target | 80% | research.md §6.1 recommendation — mature projects |
-
-Strategy: raise by 10%p per sprint via PR. Once at 80%, switch from numeric target to "new code must ship with tests" policy.
+---
 
 ## Why this template exists
 
-### Why not mpuig/claude-code-py-template?
+Python project scaffolding is a decision maze: which type checker, which test runner,
+which import linter, which formatter, which src layout. This template picks **one
+defensible answer for each** and ships a SETUP.md the agent can execute directly.
 
-mpuig's template is a **PoC orchestrator**, not a scaffolding template. It provides slash-command agents that build a proof-of-concept from requirements. It has:
-- No `.github/workflows/` CI
-- No CodeRabbit integration
-- No basedpyright (uses mypy)
-- No Git safety gate
-- No non-interactive `uv init` automation
+**Pinned choices** (with reasoning):
 
-This template's purpose — "empty directory → CI green, non-interactively" — is simply out of scope for mpuig.
+| Layer | Choice | Why (rejected alternatives) |
+|---|---|---|
+| Type check | basedpyright (strict, CI) + ty (IDE) | mypy is slower; plain pyright without strict lets too much through |
+| Lint + format | Ruff (E,F,I,UP,B,S,PERF,PD,NPY,RUF) | black + isort + flake8 = 3 tools, 3 ways to configure them wrong |
+| Import linter | import-linter with include_external_packages | prevents `services/` from importing `sqlalchemy` directly |
+| Runtime / package mgr | uv (not pip) | lockfile, reproducibility, speed |
+| Layout | `src/my_project/` | prevents accidental import of in-tree code — a real bug source |
+| Archetype | FastAPI / Library-CLI / Data-science | pick the one that fits; see below |
 
-### Why not smartwhale8/claude-playbook?
+---
 
-smartwhale8/claude-playbook is a **language-neutral `.claude/` template**. It provides a production-ready `.claude/rules/` + skills + agents structure, but:
-- No Python-specific tooling (Ruff, basedpyright, uv, pytest)
-- No SETUP.md phase document to drive scaffolding
-- No CI template, no archetype branching
-- Requires manual adaptation for every language
+## Who should use this
 
-This template provides the Python-specific layer that claude-playbook intentionally omits.
+**Persona 1 — Solo developer or small team starting a new Python service**
+- What it solves: "what do I pin? what CI do I run? what architecture do I enforce?"
+- What it does NOT solve: domain modeling decisions, infrastructure choices (DB, message broker)
 
-### Why not fpgmaas/cookiecutter-uv?
+**Persona 2 — LLM-assisted development (Claude Code, Cursor)**
+- What it solves: the agent gets a fail-fast SETUP.md, retry budgets, verification loops, and zero ambiguity about "which formatter"
+- What it does NOT solve: the agent still needs you to pick the archetype, project name, and business domain
 
-cookiecutter-uv is **interactive-only** — `cookiecutter.json` requires interactive user prompts, which directly conflicts with LLM agent non-interactive execution. Additionally:
-- Uses tox + Makefile (not uv-native CI)
-- No CodeRabbit `.coderabbit.yaml`
-- No basedpyright (offers mypy/ty as interactive choice)
-- No LLM meta-instructions
-- No Git safety gate
+**Persona 3 — Team migrating toward strict typing and enforced module boundaries**
+- What it solves: basedpyright strict in CI + Import Linter contracts give concrete failures to work through
+- What it does NOT solve: the refactoring itself; this template defines the target state, not the migration path
 
-### Feature Matrix Summary
+**Persona 4 — Instructor or student setting up a reproducible Python course project**
+- What it solves: every student gets identical tooling; "works on my machine" is minimized
+- What it does NOT solve: curriculum design or assignment grading
 
-| Feature | mpuig | smartwhale8 | cookiecutter-uv | **This template** |
-|---------|:-----:|:-----------:|:---------------:|:-----------------:|
-| LLM fail-fast meta-instructions | N | Partial | N | Y |
-| Non-interactive scaffolding | N | N | **N (interactive)** | Y |
-| 2-job CI + needs gate + concurrency cancel | N | Unknown | Partial | Y |
-| CodeRabbit path_instructions | N | N | N | Y |
-| basedpyright strict CI | N | N | N | Y |
-| 3 archetype branching | N | N | N | Y |
-| Git safety gate bash block | N | Unknown | N | Y |
-| 3-language unified skeleton | N | N | N | Y |
-| Scientific basedpyright preset | N | N | N | Y |
+---
 
-### Core differentiator
+## Who should NOT use this
 
-This template is part of `llm-setup-prompts` — a **3-language unified scaffolding workspace** (TypeScript + Spring + Python). All three language templates share the same 14-section SETUP.md skeleton, `.claude/rules/` structure, and Git workflow conventions. That cross-language consistency is the feature that none of the three competitors above can replicate.
+- You need Python <= 3.10 -> this template requires 3.13
+- You prefer Poetry or PDM over uv -> swapping out uv touches roughly 40% of the SETUP
+- You want a batteries-included MVC framework (Django) -> this targets FastAPI, library, and data-science archetypes, not Django
+- You need Windows-first native builds -> CI and Docker paths assume Linux runners
 
-## Extension & Customization
-See `.claude/rules/architecture.md` for archetype-specific module layout rules.
-For Data-science: use `examples/pyproject.scientific.toml` to relax basedpyright strict for numpy/scipy stub gaps.
+---
+
+## Quick fit check
+
+Answer these three questions:
+
+1. **Python version >= 3.13?** No -> skip this template.
+2. **Willing to run basedpyright strict from day one?** (It will fail on common patterns you need to learn to avoid.) No -> use a different template.
+3. **Happy with uv as your single package manager?** (No mixing with pip or conda.) No -> fork and swap uv out, or pick a different template.
+
+All three yes -> read [SETUP.md](./SETUP.md).
+
+---
+
+## Archetype selection
+
+Phase 1 of SETUP.md asks you to pick one:
+
+| If your project is... | Pick | Because |
+|---|---|---|
+| An HTTP API with DTOs, database, and business logic | **FastAPI Service** | bundles routers/services/repositories + AppException hierarchy + Loguru + ErrorResponse schema |
+| A reusable package others will `pip install` (SDK, CLI tool, utility lib) | **Library / CLI** | bundles `__all__` public API + typer CLI entry point + `[project.scripts]` |
+| Scientific or analytical work with numpy, pandas, scipy | **Data-science** | relaxes basedpyright strict where stubs are absent; swaps syrupy for numpy.testing |
+
+Not sure? Start with **Library / CLI** -- it is the simplest. You can migrate between archetypes later, but picking right upfront saves an hour.
+
+---
+
+## What's inside
+
+- Setup flow: [SETUP.md](./SETUP.md) -- the LLM agent reads this top-to-bottom (14 phases)
+- AI agent rules: [CLAUDE.md](./CLAUDE.md) -- tech stack, primary commands, verification checklist
+- Architecture boundaries: [.claude/rules/architecture.md](./.claude/rules/architecture.md) -- src layout, import directions, exception hierarchy
+- Verification loop: [.claude/rules/verification-loop.md](./.claude/rules/verification-loop.md) -- the 6-slot fail-fast sequence
+- Test modification rules: [.claude/rules/test-modification.md](./.claude/rules/test-modification.md) -- when tests must change and how
+- Documentation modules: [.claude/rules/documentation.md](./.claude/rules/documentation.md) -- FR / RTM / ADR / RFC / reports
+
+---
+
+## Related templates
+
+- [typescript-template](https://github.com/llm-setup-templates/typescript-template) -- Next.js 15 + FSD 5 layers
+- [spring-template](https://github.com/llm-setup-templates/spring-template) -- Spring Boot 3 + layered architecture
+
+---
 
 ## License
-MIT
+
+MIT.
