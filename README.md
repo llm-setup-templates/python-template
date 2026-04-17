@@ -103,6 +103,12 @@ Not sure? Start with **Library / CLI** -- it is the simplest. You can migrate be
 
 ---
 
+## Advanced
+
+- [RATIONALE.md](./RATIONALE.md) — why this template picked these specific choices, with comparisons to alternative templates (snapshot as of 2026-04)
+
+---
+
 ## License
 
 MIT.
