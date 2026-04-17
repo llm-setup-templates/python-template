@@ -11,6 +11,7 @@ pythonVersion = "3.13"
 typeCheckingMode = "strict"
 reportMissingTypeStubs = true
 reportEmptyAbstractUsage = "error"
+exclude = ["examples", ".venv"]  # replaces pyrightconfig.json
 
 # === numpy / pandas / scipy stub incompleteness relaxation ===
 # FastAPI / Library archetype: do NOT use this file.

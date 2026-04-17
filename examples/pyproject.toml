@@ -56,6 +56,7 @@ pythonVersion = "3.13"
 typeCheckingMode = "strict"
 reportMissingTypeStubs = true
 reportEmptyAbstractUsage = "error"
+exclude = ["examples", ".venv"]  # replaces pyrightconfig.json — pyproject.toml takes effect only when no pyrightconfig.json exists
 
 # === Data-science archetype (numpy/pandas/scipy): uncomment lines below ===
 # Relaxes false positives from incomplete scientific library stubs.
