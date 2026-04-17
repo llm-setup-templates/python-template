@@ -333,6 +333,18 @@ uv run ruff check . \
 > fast — before any test cost. Matches CI step order in Appendix § CI
 > Reference.
 
+### Fix permissions during verify
+
+If a step fails, you MAY run the fix variant once, then re-run the check:
+
+| Failed step | Allowed fix | Re-check |
+|---|---|---|
+| `uv run ruff check .` | `uv run ruff check --fix .` | `uv run ruff check .` |
+| `uv run ruff format --check .` | `uv run ruff format .` | `uv run ruff format --check .` |
+
+Fixes are part of the normal iteration loop. They do NOT count against the
+3-attempt retry budget.
+
 All checks must pass before Phase 8.
 
 > **syrupy first run**: If snapshot files don't exist yet, run
