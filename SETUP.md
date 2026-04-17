@@ -150,6 +150,10 @@ Write the following config files (exact content in Appendix § Config Reference)
 - .coderabbit.yaml
 - .gitignore (see Appendix § .gitignore — `uv init` does not generate one)
 - pyrightconfig.json — exclude `examples/` from basedpyright scan (see Appendix)
+- .importlinter — architecture boundary contracts (see Appendix § .importlinter):
+  `cp /tmp/ref-python/examples/.importlinter .`
+  Then substitute every `my_project` literal with `$PKG`:
+  `sed -i "s/my_project/$PKG/g" .importlinter`
 - CLAUDE.md: replace `{{PROJECT_NAME}}` with the actual project name:
   `sed -i "s/{{PROJECT_NAME}}/$(basename "$PWD")/g" CLAUDE.md`
 
@@ -597,6 +601,45 @@ Thumbs.db
   "exclude": ["examples", ".venv"]
 }
 ```
+
+### § .importlinter Reference
+
+Copy from the template reference and substitute the package name:
+
+```bash
+cp /tmp/ref-python/examples/.importlinter .
+sed -i "s/my_project/$PKG/g" .importlinter
+```
+
+Full content of `examples/.importlinter` (for reference):
+
+```ini
+[importlinter]
+root_package = my_project
+
+[importlinter:contract:layered-architecture]
+name = Layered Architecture
+type = layers
+layers =
+    my_project.routers
+    my_project.services
+    my_project.repositories
+
+[importlinter:contract:service-purity]
+name = Service Layer Purity
+type = forbidden
+source_modules =
+    my_project.services
+forbidden_modules =
+    sqlalchemy
+    fastapi
+    httpx
+```
+
+> **FastAPI archetype note**: The `layered-architecture` contract enforces
+> `routers → services → repositories` import direction.
+> The `service-purity` contract prohibits framework imports in the service
+> layer so business logic stays framework-agnostic.
 
 ### § CI Reference
 
