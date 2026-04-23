@@ -21,5 +21,7 @@ reportUnknownVariableType = false
 
 [tool.ruff.lint]
 # Data-science archetype: PD/PERF/NPY emphasis (already included in default select)
-select = ["E", "F", "I", "UP", "B", "S", "PERF", "PD", "NPY", "RUF"]
+select = ["E", "W", "F", "I", "UP", "B", "S", "PERF", "PD", "NPY", "RUF"]
 ignore = ["E501"]
+
+# [tool.pytest.ini_options] — data-science archetype은 베이스 pyproject의 --cov=src/my_project 경로 유지. floating-point 테스트는 tests/regression/ 사용 (syrupy 비권장, numpy.testing.assert_allclose 권장).
