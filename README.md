@@ -14,9 +14,12 @@ bash ./scaffold.sh --pkg my_app --archetype fastapi
 uv sync && uv run pytest
 ```
 
-> Run under **Bash** (Git Bash / WSL on Windows). scaffold.sh refuses to
-> run under PowerShell or cmd.exe (see the guard at its top, added after
-> the e2e24 dry run exposed a silent-success failure mode).
+> Run under **Bash** (Git Bash / WSL on Windows). The `bash` prefix is
+> load-bearing — `.\scaffold.sh` in PowerShell silently no-ops in headless
+> contexts (CI, agent sandboxes) and may not execute the script at all in
+> interactive PowerShell. scaffold.sh's internal guard catches dash/sh/zsh
+> invocations, but PowerShell bypasses the script body entirely. See
+> [RATIONALE.md § PowerShell Silent-No-Op](./RATIONALE.md).
 
 See [SETUP.md](SETUP.md) for all options (library / data-science archetypes,
 doc module selection, optional GitHub publish step) and
