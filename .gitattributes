@@ -1,0 +1,21 @@
+# Force LF line endings on shell scripts (Linux CI fails on CRLF shebang)
+*.sh text eol=lf
+*.bash text eol=lf
+
+# Python sources — consistent LF
+*.py text eol=lf
+*.pyi text eol=lf
+
+# Config files
+*.toml text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.ini text eol=lf
+*.cfg text eol=lf
+.python-version text eol=lf
+.gitignore text eol=lf
+.importlinter text eol=lf
+CODEOWNERS text eol=lf
+
+# Markdown: LF for repo consistency
+*.md text eol=lf
