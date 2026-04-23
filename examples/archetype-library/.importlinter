@@ -1,0 +1,13 @@
+[importlinter]
+root_package = my_project
+include_external_packages = True
+
+[importlinter:contract:core-purity]
+name = Core Layer Framework Isolation (Library/CLI archetype)
+type = forbidden
+source_modules =
+    my_project.core
+forbidden_modules =
+    fastapi
+    sqlalchemy
+    httpx

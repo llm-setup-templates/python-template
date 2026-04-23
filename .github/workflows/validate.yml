@@ -21,3 +21,28 @@ jobs:
 
       - name: Run validate.sh
         run: bash validate.sh
+
+  scaffold-e2e:
+    name: Scaffold E2E (${{ matrix.archetype }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        archetype: [fastapi, library, data-science]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv (also installs Python 3.13 via uv python)
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/uv.lock"
+
+      - name: Install Python 3.13 via uv
+        # uv manages Python installs internally — avoids actions/setup-python
+        # needing a root-level .python-version file (ours is at examples/.python-version
+        # pre-scaffold). scaffold-e2e.sh copies it to root inside the tmpdir.
+        run: uv python install 3.13
+
+      - name: Run scaffold-e2e
+        run: bash test/scaffold-e2e.sh ${{ matrix.archetype }}
