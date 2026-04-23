@@ -37,8 +37,10 @@ check_gte() {
   fi
 }
 
-echo "=== V1: SETUP.md residual placeholders (excl PROJECT_NAME) ==="
-V1_COUNT=$(grep -oE '\{\{[A-Z_]+\}\}' "$ROOT/SETUP.md" | grep -v 'PROJECT_NAME' | wc -l | tr -d ' ')
+echo "=== V1: SETUP.md residual placeholders (only REPO_NAME + VISIBILITY allowed) ==="
+# REPO_NAME / VISIBILITY are the two canonical runtime-filled placeholders
+# (see SETUP.md § Placeholder Index). Any other {{CAPS}} token is residual.
+V1_COUNT=$(grep -oE '\{\{[A-Z_]+\}\}' "$ROOT/SETUP.md" | grep -vE 'REPO_NAME|VISIBILITY' | wc -l | tr -d ' ')
 check_present_eq "V1" "SETUP.md residual placeholders" "$V1_COUNT" "0"
 
 echo ""

@@ -10,16 +10,38 @@ You are an autonomous coding agent. Execute this document Phase by Phase
 from top to bottom.
 
 ### Execution Rules
-- Use the Bash tool for shell commands. Use the Write tool for config files.
+- **Shell**: Use **Bash** (Git Bash on Windows) for all shell commands. Do not use
+  PowerShell or cmd.exe — Appendix config files are UTF-8 no-BOM, and PowerShell
+  default `Set-Content` / redirection writes UTF-16 LE with BOM, which breaks
+  `uv sync` (README decode error) and Ruff/basedpyright parsing. If PowerShell
+  is the only option, see Troubleshooting § "PowerShell UTF-8 encoding".
+- Use the Bash tool for shell commands. Use the Write tool for config files
+  (the Write tool always produces UTF-8 no-BOM; do not paraphrase to
+  `Out-File` / `Set-Content`).
 - Each Phase is **fail-fast**. On failure, consult the Troubleshooting
   section and retry up to **3 times** before escalating to the human.
 - Never skip the **Local Verify** phase. Do not claim completion until CI
   shows green on the first push (use `gh run watch`).
 - Use **pinned versions** from the Config Reference Appendix. Do not guess.
 - Do not ask the human for input during execution except for:
-  (a) GitHub repo name
-  (b) visibility (private/public)
+  (a) `{{REPO_NAME}}` — GitHub repository name, **hyphen-case** (e.g. `my-awesome-app`)
+  (b) `{{VISIBILITY}}` — `private` or `public`
   (c) final approval before pushing
+
+### Naming Convention — REPO_NAME vs Package Name
+
+This template separates two names that are often conflated:
+
+| Name | Case | Where it's used | Example |
+|---|---|---|---|
+| `{{REPO_NAME}}` | **hyphen-case** | GitHub repo, working directory | `my-awesome-app` |
+| `$PKG` (derived) | **snake_case** | Python package under `src/`, pyproject `[project.name]`, scripts, Import Linter contracts | `my_awesome_app` |
+
+`$PKG` is **automatically derived at runtime** from the working directory name
+(see Phase 1 scaffolding). You never pass it in — it's computed by
+`PKG=$(basename "$PWD" | tr '-' '_')`. That's why there is **no
+`PACKAGE_NAME` placeholder** — only `{{REPO_NAME}}` and `{{VISIBILITY}}`
+are runtime-filled.
 
 ### Success Criteria
 - [ ] GitHub repository created and first commit pushed
@@ -37,10 +59,17 @@ from top to bottom.
 
 ```bash
 gh auth status || exit 1
-mkdir {{PROJECT_NAME}} && cd {{PROJECT_NAME}}
+
+# REPO_NAME must be hyphen-case (e.g. my-awesome-app).
+# VISIBILITY must be "private" or "public".
+mkdir {{REPO_NAME}} && cd {{REPO_NAME}}
 git init -b main
-gh repo create {{PROJECT_NAME}} --private --source=. --remote=origin
+gh repo create {{REPO_NAME}} --{{VISIBILITY}} --source=. --remote=origin
 ```
+
+> After Phase 0 the working directory is `{{REPO_NAME}}/`. Throughout the
+> rest of this document, `$PKG` (snake_case Python package name) is
+> computed from this directory — see Phase 1.
 
 ## 3.1 Phase 0.5 — Clone Template Reference
 
@@ -96,9 +125,9 @@ Select one and follow the branch. The rest of SETUP.md applies identically.
 
 ### Scaffolding Command (all archetypes)
 
-You are already inside `{{PROJECT_NAME}}/` from Phase 0, so initialize the
+You are already inside `{{REPO_NAME}}/` from Phase 0, so initialize the
 current directory in place — do NOT pass a path to `uv init` (that would
-nest `{{PROJECT_NAME}}/{{PROJECT_NAME}}/`).
+nest `{{REPO_NAME}}/{{REPO_NAME}}/`).
 
 ```bash
 uv init --package --python 3.13
@@ -166,8 +195,9 @@ Write the following config files (exact content in Appendix § Config Reference)
   `cp /tmp/ref-python/examples/.importlinter .`
   Then substitute every `my_project` literal with `$PKG`:
   `sed -i "s/my_project/$PKG/g" .importlinter`
-- CLAUDE.md: replace `{{PROJECT_NAME}}` with the actual project name:
-  `sed -i "s/{{PROJECT_NAME}}/$(basename "$PWD")/g" CLAUDE.md`
+- CLAUDE.md: replace `{{REPO_NAME}}` with the actual repo name
+  (= current directory = hyphen-case):
+  `sed -i "s/{{REPO_NAME}}/$(basename "$PWD")/g" CLAUDE.md`
 
 > **Data-science archetype note**: After writing `pyproject.toml`, apply
 > `examples/pyproject.scientific.toml` basedpyright relaxations:
@@ -289,8 +319,23 @@ rm -rf docs/data/
 
 ### 8.5.3 Replace placeholders
 
-- `.github/CODEOWNERS` — replace `@YOUR_ORG/*` with real team handles
-  (or a single `* @YOUR_USERNAME` line for solo projects)
+- `.github/CODEOWNERS` — replace **every** `@YOUR_ORG/...` token with real
+  GitHub team handles. The file ships with three distinct placeholder
+  groups that all need substitution:
+  - `@YOUR_ORG/engineering` (default owner — wildcard fallback)
+  - `@YOUR_ORG/architects` (decisions, `core/`, Import Linter contracts)
+  - `@YOUR_ORG/devops` (CI/CD, dependency surface, Python version pin)
+  A sweep substitution covers all three at once:
+  ```bash
+  # Solo project:
+  sed -i "s|@YOUR_ORG/[a-z-]*|@YOUR_USERNAME|g" .github/CODEOWNERS
+  # Team project (example):
+  sed -i "s|@YOUR_ORG/engineering|@my-team/eng|g;
+          s|@YOUR_ORG/architects|@my-team/architects|g;
+          s|@YOUR_ORG/devops|@my-team/platform|g" .github/CODEOWNERS
+  ```
+  After substitution, verify no placeholder remains:
+  `grep -n "YOUR_ORG\|YOUR_USERNAME" .github/CODEOWNERS` **must print nothing**.
 - `docs/README.md` — top-of-file project name and one-line description
 - `docs/architecture/overview.md` — project name, actors, external
   systems in the Mermaid diagram
@@ -329,21 +374,62 @@ to find all required files as the template evolves. This workflow and
 your derived repo**.
 
 When copying `.github/` contents from `/tmp/ref-python/.github/` during
-Phase 5.5, explicitly exclude:
+Phase 5.5, copy **exactly** this whitelist — nothing else:
 
 ```bash
+# --- .github/ (whitelist; do NOT copy recursively) ---
+mkdir -p .github/workflows
 cp -r /tmp/ref-python/.github/ISSUE_TEMPLATE .github/
 cp /tmp/ref-python/.github/PULL_REQUEST_TEMPLATE.md .github/
 cp /tmp/ref-python/.github/CODEOWNERS .github/
 # Note: .github/workflows/validate.yml — SKIP (template-only)
 # Your derived repo has its own .github/workflows/ci.yml from Phase 5
+
+# --- .claude/ (MUST be copied — Phase 5.5.4 edits .claude/rules/documentation.md) ---
+cp -r /tmp/ref-python/.claude .
+
+# --- Do NOT copy the following (template-repo-only self-maintenance files) ---
+# .github/dependabot.yml         → template-only; see § 8.5.7 "Dependabot policy"
+# examples/dependabot.yml        → template-only (monitored alongside .github one)
+# .github/workflows/validate.yml → template-only regression CI
+# validate.sh                    → template-only regression script
+# examples/                      → reference only; keep in /tmp/ref-python
+# docs/ / README.md / LICENSE / RATIONALE.md → the derived repo writes its own
 ```
 
-If you mistakenly copied validate.yml, remove it:
+If you mistakenly copied validate.yml or dependabot.yml, remove them
+before committing:
 
 ```bash
 rm -f .github/workflows/validate.yml
-git add .github/workflows/
+rm -f .github/dependabot.yml examples/dependabot.yml
+git add .github/
+```
+
+### 8.5.7 Dependabot policy — template-only, NOT for derived repos
+
+The template ships `.github/dependabot.yml` and `examples/dependabot.yml`
+**for its own self-maintenance** (monthly monitoring of `/examples`
+pip deps + github-actions deps used by validate.yml). These files are
+analogous to `.github/workflows/validate.yml` — template-only, never
+copied to a derived repo.
+
+Why the whitelist excludes them:
+
+- On a brand-new derived repo, a seeded `dependabot.yml` spawns immediate
+  ecosystem PRs on first push (one per `package-ecosystem` block). Those
+  PRs run CI against a repo whose own first main CI is still stabilizing
+  → cascade of red CI runs + unnecessary noise.
+- Dependabot is an **opt-in, post Phase 8** addition for derived repos.
+  After your first CI green on `main`, open a follow-up PR that adds a
+  derived-repo-specific `.github/dependabot.yml` (ecosystems tuned to
+  your actual project — typically `pip` on `/` not `/examples`) and
+  document the update cadence in an ADR.
+
+```bash
+# Sanity check before `git add` — NEITHER path should exist in the derived repo:
+test ! -f .github/dependabot.yml || { echo "BLOCKED: remove .github/dependabot.yml (template-only, see § 8.5.7)"; exit 1; }
+test ! -f examples/dependabot.yml || { echo "BLOCKED: remove examples/dependabot.yml (template-only, see § 8.5.7)"; exit 1; }
 ```
 
 ---
@@ -456,7 +542,38 @@ git push -u origin $(git rev-parse --abbrev-ref HEAD)
 gh run watch
 ```
 
-### 11.4 Success Declaration
+### 11.4 CI Run Recovery — if the first push did NOT trigger a run
+
+On brand-new repos the `push`-to-`main` trigger can race with the default
+branch being bootstrapped by `gh repo create`. After step 11.3, check for
+a run:
+
+```bash
+sleep 5  # give GitHub a moment to register the push
+RUN_ID=$(gh run list --workflow=ci.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')
+if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
+  echo "No CI run detected on main. Triggering manually via workflow_dispatch..."
+  gh workflow run ci.yml --ref main
+  sleep 3
+  gh run watch "$(gh run list --workflow=ci.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')"
+else
+  gh run watch "$RUN_ID"
+fi
+```
+
+`workflow_dispatch` is wired into `ci.yml` (see Appendix § CI Reference)
+precisely to cover this recovery case. A second recovery option — for
+environments where `workflow_dispatch` is disabled — is to create a
+conventional no-op commit:
+
+```bash
+git commit --allow-empty -m "chore(ci): retrigger workflow on main"
+git push origin main
+```
+
+Do **not** force-push or rewrite history to recover CI.
+
+### 11.5 Success Declaration
 
 Only after `gh run watch` reports all jobs green, you may report the task
 as complete to the human.
@@ -474,6 +591,8 @@ as complete to the human.
 | `basedpyright` reports `reportCallIssue` on `Field(None, ...)` | pydantic `Field()` positional-default ambiguity under strict | change to `= None` or `Field(default=None, description=...)` |
 | `# type: ignore[...]` not honored by basedpyright | pyright/basedpyright use a different ignore-comment syntax from mypy | use `# pyright: ignore[ruleName]` (e.g. `# pyright: ignore[reportArgumentType]`) |
 | `lint-imports` reports `Missing layer 'my_project.routers'` | Import Linter contract references a module that does not exist | add a stub `src/my_project/routers/__init__.py` (and likewise for `services`, `repositories`) |
+| `uv sync` reports `README.md: invalid utf-8` or files appear as garbage in CI | Files were written from PowerShell with UTF-16 LE BOM (default encoding) | **Preferred**: re-run setup in Bash / Git Bash. **Fallback**: `[System.IO.File]::WriteAllText($path, $content, (New-Object System.Text.UTF8Encoding $false))` for every config file, OR `Set-Content -Path $p -Value $c -Encoding utf8 -NoNewline` on PowerShell 7+. Verify with `file README.md pyproject.toml` (expects `UTF-8 Unicode text`, not `UTF-16`). Touching files once with Git Bash `dos2unix -u file` also re-encodes. |
+| First push succeeds but no CI run appears in `gh run list` | `push`-to-`main` trigger race with concurrent `gh repo create` default-branch bootstrap | See Phase 8.4 § CI Run Recovery — workflow_dispatch is wired in ci.yml; run `gh workflow run ci.yml --ref main` as recovery. |
 
 ## 13. Essential Checklist
 
@@ -705,6 +824,10 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
+  # Manual trigger — required for Phase 8.4 CI Run Recovery when the
+  # initial push-to-main did not auto-fire (race with gh repo create
+  # default-branch bootstrap).
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -820,9 +943,15 @@ jobs:
 
 All `{{...}}` placeholders in this template (enumerated — NOT a placeholder itself):
 
-| Placeholder | Scope | Filled by | Example |
-|---|---|---|---|
-| `{{PROJECT_NAME}}` | Phase 0 + Phase 1 | user input at runtime | `my_project` |
+| Placeholder | Scope | Filled by | Case / Format | Example |
+|---|---|---|---|---|
+| `{{REPO_NAME}}` | Phase 0, Phase 1, Phase 3 (CLAUDE.md) | user input at runtime | hyphen-case | `my-awesome-app` |
+| `{{VISIBILITY}}` | Phase 0 (`gh repo create --{{VISIBILITY}}`) | user input at runtime | `private` \| `public` | `private` |
+
+`$PKG` is **not a placeholder** — it's a shell variable derived at runtime
+from `basename "$PWD" \| tr '-' '_'` (snake_case Python package name).
+Every `my_project` literal in the Appendix config files is substituted
+with `$PKG` via `sed` in Phase 3.
 
 ### § Coverage Threshold Adjustment
 
