@@ -84,15 +84,26 @@ fi
 check_gte "V3b" "ci.yml runs uv run lint-imports" "$V3_LINT_IMPORTS" "1"
 
 echo ""
-echo "=== V4: regression guards (PR #7 lint-imports wiring + PR hardening dependabot + contract count + multi-archetype sync) ==="
-# SETUP.md must reference lint-imports in Local Verify, Success Criteria,
-# and Essential Checklist. CLAUDE.md must reference it too.
+echo "=== V4: regression guards (lint-imports wiring in SETUP/CLAUDE + import-linter dep in archetype pyprojects) ==="
+# Post-Phase-13: SETUP.md is the scaffold.sh reference guide (not phase-by-phase).
+# It must reference lint-imports (the command) in Quick Start + Verification sections.
+# CLAUDE.md (template) continues to reference lint-imports in Primary Commands.
+# The import-linter PACKAGE dep is enforced in archetype pyproject.toml files
+# (since Phase 13 moved pyproject out of SETUP.md Appendix into examples/).
 V4_SETUP_LI=$(grep -c "lint-imports" "$ROOT/SETUP.md" || echo 0)
 V4_CLAUDE_LI=$(grep -c "lint-imports" "$ROOT/CLAUDE.md" || echo 0)
-V4_SETUP_DEPS=$(grep -c "import-linter" "$ROOT/SETUP.md" || echo 0)
-check_gte "V4a" "SETUP.md references lint-imports (>= 3: Success Criteria + Phase 7 + Checklist)" "$V4_SETUP_LI" "3"
+V4_ARCHETYPE_DEPS=0
+for f in \
+  examples/archetype-fastapi/pyproject.toml \
+  examples/archetype-library/pyproject.toml \
+  examples/archetype-data-science/pyproject.toml; do
+  if [ -f "$ROOT/$f" ] && grep -q 'import-linter' "$ROOT/$f"; then
+    V4_ARCHETYPE_DEPS=$((V4_ARCHETYPE_DEPS + 1))
+  fi
+done
+check_gte "V4a" "SETUP.md references lint-imports (>= 2: Quick Start + Verification)" "$V4_SETUP_LI" "2"
 check_gte "V4b" "CLAUDE.md Primary Commands reference lint-imports" "$V4_CLAUDE_LI" "1"
-check_gte "V4c" "SETUP.md references import-linter (Phase 2 devDeps + Appendix pyproject)" "$V4_SETUP_DEPS" "2"
+check_present_eq "V4c" "all 3 archetype pyprojects declare import-linter dep" "$V4_ARCHETYPE_DEPS" "3"
 
 echo ""
 echo "=== V5: ADR template encodes 5-state lifecycle ==="
@@ -191,6 +202,72 @@ if grep -qE 'exclude.*examples' "$ROOT/examples/pyproject.toml" && \
   pass "V12b" "pyright exclude 'examples' present in main + fastapi pyproject"
 else
   fail "V12b" "pyright exclude 'examples' must be present in both examples/pyproject.toml AND examples/archetype-fastapi/pyproject.toml"
+fi
+
+echo ""
+echo "=== V13: scaffold.sh executable + --help ==="
+if [ -x "$ROOT/scaffold.sh" ]; then
+  pass "V13a" "scaffold.sh is executable"
+else
+  fail "V13a" "scaffold.sh missing or not executable"
+fi
+if "$ROOT/scaffold.sh" --help >/dev/null 2>&1; then
+  pass "V13b" "scaffold.sh --help exits 0"
+else
+  fail "V13b" "scaffold.sh --help failed"
+fi
+
+echo ""
+echo "=== V14: scaffold.sh rejects bad input ==="
+if ! "$ROOT/scaffold.sh" --pkg "bad-case" >/dev/null 2>&1; then
+  pass "V14a" "scaffold.sh rejects hyphen-case --pkg"
+else
+  fail "V14a" "scaffold.sh accepted invalid --pkg 'bad-case'"
+fi
+if ! "$ROOT/scaffold.sh" --pkg "ok" --archetype invalid_type >/dev/null 2>&1; then
+  pass "V14b" "scaffold.sh rejects invalid --archetype"
+else
+  fail "V14b" "scaffold.sh accepted invalid --archetype"
+fi
+if ! "$ROOT/scaffold.sh" --pkg "ok" --doc-modules "reports" >/dev/null 2>&1; then
+  pass "V14c" "scaffold.sh requires 'core' in --doc-modules"
+else
+  fail "V14c" "scaffold.sh accepted --doc-modules without 'core'"
+fi
+
+echo ""
+echo "=== V15: test/scaffold-e2e.sh exists + archetype support files ==="
+if [ -f "$ROOT/test/scaffold-e2e.sh" ]; then
+  pass "V15a" "test/scaffold-e2e.sh present"
+else
+  fail "V15a" "test/scaffold-e2e.sh missing"
+fi
+V15_FILES=0
+for f in \
+  examples/archetype-library/pyproject.toml \
+  examples/archetype-library/.importlinter \
+  examples/archetype-library/tests/test_smoke.py \
+  examples/archetype-data-science/pyproject.toml \
+  examples/archetype-data-science/.importlinter \
+  examples/.gitignore; do
+  if [ -f "$ROOT/$f" ]; then
+    V15_FILES=$((V15_FILES + 1))
+  else
+    fail "V15b" "archetype support file missing: $f"
+  fi
+done
+check_present_eq "V15b" "archetype support files present (6/6)" "$V15_FILES" "6"
+# Sanity: library pyproject must NOT include fastapi
+if grep -q '"fastapi' "$ROOT/examples/archetype-library/pyproject.toml" 2>/dev/null; then
+  fail "V15c" "library archetype pyproject contains 'fastapi' dep (should not)"
+else
+  pass "V15c" "library archetype pyproject is fastapi-free"
+fi
+# Sanity: data-science pyproject must include scientific relaxation
+if grep -q 'reportUnknownMemberType = false' "$ROOT/examples/archetype-data-science/pyproject.toml" 2>/dev/null; then
+  pass "V15d" "data-science archetype has pyright relaxation"
+else
+  fail "V15d" "data-science archetype missing pyright relaxation"
 fi
 
 echo ""
