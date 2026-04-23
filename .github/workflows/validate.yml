@@ -17,7 +17,7 @@ jobs:
     name: Static verification (validate.sh)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run validate.sh
         run: bash validate.sh
@@ -30,7 +30,7 @@ jobs:
       matrix:
         archetype: [fastapi, library, data-science]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install uv (also installs Python 3.13 via uv python)
         uses: astral-sh/setup-uv@v5
