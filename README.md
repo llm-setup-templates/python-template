@@ -2,12 +2,22 @@
 
 [한국어 README](./README.ko.md)
 
-> An opinionated Python 3.13 project template designed for LLM coding agents
-> (Claude Code / Cursor) to scaffold from an empty directory to a green GitHub
-> Actions CI — without human intervention mid-setup.
+> An opinionated Python 3.13 project template. Clone it, run one script, get a
+> project scaffolded to your archetype of choice — with a green CI pipeline.
 
-**Empirically verified**: SETUP.md alone drives Claude Code → green CI in 35 min
-([proof run](https://github.com/KWONSEOK02/llm-setup-e2e17-python/actions/runs/24566234342)).
+## Quick Start
+
+```bash
+git clone https://github.com/llm-setup-templates/python-template my-app
+cd my-app
+./scaffold.sh --pkg my_app --archetype fastapi
+uv sync && uv run pytest
+```
+
+See [SETUP.md](SETUP.md) for all options (library / data-science archetypes,
+doc module selection, optional GitHub publish step) and
+[ADR-002](docs/architecture/decisions/ADR-002-clone-script-scaffolding.md)
+for the architecture rationale.
 
 ---
 
