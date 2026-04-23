@@ -21,3 +21,27 @@ jobs:
 
       - name: Run validate.sh
         run: bash validate.sh
+
+  scaffold-e2e:
+    name: Scaffold E2E (${{ matrix.archetype }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        archetype: [fastapi, library, data-science]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "**/uv.lock"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: ".python-version"
+
+      - name: Run scaffold-e2e
+        run: bash test/scaffold-e2e.sh ${{ matrix.archetype }}
