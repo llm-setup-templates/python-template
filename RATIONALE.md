@@ -192,9 +192,23 @@ solutions with no shared skeleton or cross-language convention.
 ## See also
 
 - [README.md](./README.md) — 30-second fit check and quick start
-- [SETUP.md](./SETUP.md) — LLM agent scaffolding flow (14 phases)
+- [SETUP.md](./SETUP.md) — scaffold.sh usage guide (post-Phase-13 architecture)
+- [ADR-002](./docs/architecture/decisions/ADR-002-clone-script-scaffolding.md)
+  — why the pre-Phase-13 14-phase SETUP.md flow was replaced with clone + script
 - [CLAUDE.md](./CLAUDE.md) — AI agent rules for derived projects
 - External references (snapshot as of 2026-04):
   - [mpuig/claude-code-py-template](https://github.com/mpuig/claude-code-py-template)
   - [smartwhale8/claude-playbook](https://github.com/smartwhale8/claude-playbook)
   - [fpgmaas/cookiecutter-uv](https://github.com/fpgmaas/cookiecutter-uv)
+
+---
+
+## Clone + Script Architecture (Phase 13, 2026-04-23)
+
+See [ADR-002](./docs/architecture/decisions/ADR-002-clone-script-scaffolding.md)
+for the full decision record. One-sentence summary: Phase 12 Fix 1–6 accumulated
+environment-specific workarounds because **template file acquisition was coupled
+to GitHub CLI availability**. Phase 13 decouples them — `git clone` gets the
+files, `./scaffold.sh` customizes, and `gh repo create` is an optional separate
+step. Direct driver: Codex e2e23 dry run (2026-04-23) spent 2m 26s unable to
+locate Windows `gh.exe` from its Linux sandbox and never reached Phase 1.
