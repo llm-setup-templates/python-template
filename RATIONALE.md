@@ -212,3 +212,143 @@ to GitHub CLI availability**. Phase 13 decouples them — `git clone` gets the
 files, `./scaffold.sh` customizes, and `gh repo create` is an optional separate
 step. Direct driver: Codex e2e23 dry run (2026-04-23) spent 2m 26s unable to
 locate Windows `gh.exe` from its Linux sandbox and never reached Phase 1.
+
+---
+
+## PowerShell Silent-No-Op — Accepted Limitation (Fix 8 post-mortem)
+
+> Timeline: Fix 8 merged 2026-04-23 (commit `5a16bf3`). Empirical PowerShell
+> testing + this post-mortem section written 2026-04-24.
+
+After Phase 13 shipped, the Codex e2e24 and e2e25 dry runs uncovered a
+Windows-specific failure mode. Fix 8 addressed part of it but could not
+fully eliminate it. This section documents what remains, why, and what
+users must do.
+
+### Symptoms
+
+Invoking `.\scaffold.sh` directly from Windows PowerShell (no `bash` prefix)
+produces one of two outcomes, depending on environment:
+
+| Environment | Result |
+|---|---|
+| Interactive user PowerShell (Windows 10/11) | Windows "choose an app" dialog appears — visible feedback. If the user dismisses or picks a non-bash app, the script does **not** execute. |
+| Headless PowerShell (Codex sandbox, CI runners, `powershell.exe -Command "..."` from scripts) | **Silent no-op** — `exit 0`, no output, no side effects. Script body never executes. |
+
+### Empirical test matrix (2026-04-24, Windows 11 + Git for Windows 2.49.0 + PowerShell 5.1)
+
+| Invocation | Script body ran? | `$LASTEXITCODE` | Side effects |
+|---|---|---|---|
+| `.\test.sh` (direct) | ❌ no-op | 0 / empty | none |
+| `.\test` (no extension, direct) | ❌ no-op | 0 / empty | none |
+| `bash test.sh` | ✅ runs | 0 | expected |
+| `bash test` (no extension) | ✅ runs | 0 | expected |
+
+The root cause is in PowerShell's invocation mechanism, not the `.sh` extension
+or the Windows registry. PowerShell's `.\<name>` form invokes the file directly
+as a process argument and does **not** fall back to ShellExecute when that
+fails. The `.sh=sh_auto_file "C:\Program Files\Git\git-bash.exe" --no-cd "%L" %*`
+registry entry IS registered by standard Git for Windows installs, and WOULD
+dispatch correctly if the file were launched via ShellExecute (double-click in
+Explorer, `Start-Process` with the default verb, or `cmd /c file.sh`). But
+PowerShell's `.\<name>` code path skips ShellExecute for non-`.ps1` files.
+This is why the `.\test` (no extension) case reproduces identically — the
+invocation form is the variable, not the extension. The script body is never
+parsed, which in turn means the `BASH_VERSION` / `$BASH` interpreter guard
+inside scaffold.sh cannot fire — the shell never reaches the line where the
+guard is defined.
+
+### Why file-extension rename doesn't help
+
+A natural Fix 9 hypothesis was "rename `scaffold.sh` to `scaffold` (no extension)
+so Windows has no file association to dispatch to." Empirical testing rejected
+this hypothesis: `.\scaffold` (no extension) also silent-no-ops from headless
+PowerShell, identical to `.\scaffold.sh`. The silent-no-op behavior is a
+property of PowerShell's handling of non-PS1 files in the `.\<name>` invocation
+form, not of the `.sh` extension specifically. See rationale above.
+
+### What users must do
+
+Always invoke scaffold.sh with an explicit `bash` prefix:
+
+```bash
+bash ./scaffold.sh --pkg <name> --archetype <type>
+```
+
+This works identically in:
+- Git Bash (Windows)
+- WSL bash (Windows)
+- Native bash (Linux, macOS)
+- Headless PowerShell (when `bash` is on PATH via Git for Windows)
+
+The Quick Start in SETUP.md and README.md uses this form. Users who follow the
+documented Quick Start are safe. Users who substitute `./scaffold.sh` or
+`.\scaffold.sh` in PowerShell may observe the silent-no-op documented above.
+
+### Guard coverage (what Fix 8 does and doesn't protect against)
+
+The guard at the top of scaffold.sh is a **three-condition OR check**:
+1. `[ -z "${BASH_VERSION:-}" ]` — no `BASH_VERSION` variable
+2. `[ -z "${BASH:-}" ]` — no `BASH` variable
+3. `${BASH##*/}` (basename of `$BASH`) not in `{bash, bash.exe}`
+
+Any one true → guard fires and exits non-zero with a remediation message.
+
+Both `BASH_VERSION` and `$BASH` are bash-only shell variables, so either one
+being unset reliably signals non-bash. Checking both independently (rather
+than a single `BASH_VERSION` check) closes the M-03 edge case: a parent
+PowerShell process can inject `BASH_VERSION` into the exported environment
+(`$env:BASH_VERSION = "5.0"`), which a spawned non-bash POSIX shell (dash,
+ash, busybox) would inherit as a shell variable — making condition 1 alone
+insufficient. The `$BASH` variable (bash-only, holds the interpreter's
+absolute path) plus the basename check confirms the running interpreter IS
+bash and not just a shell with an inherited environment.
+
+The guard fires when:
+- Script body is parsed by a non-bash interpreter that proceeds past the
+  shebang line: dash, ash, busybox sh, zsh. CI matrix verifies this on Linux
+  via explicit `dash scaffold.sh ...` invocation.
+
+The guard cannot fire when:
+- Script body is never parsed — e.g., Windows ShellExecute dispatches the file
+  to a non-shell handler (Notepad, default app dialog), or the headless
+  PowerShell case documented above where PowerShell's `.\<name>` form bypasses
+  execution entirely.
+
+This asymmetry is why we treat PowerShell silent-no-op as an **accepted
+limitation** rather than a bug to fix in-script: no code inside the script can
+defend against scenarios where the script is never executed. Once any
+interpreter actually begins parsing the script body, the guard works; when
+PowerShell never gets to the guard, there's no defense point inside the file.
+
+### Why this is not Phase-13-blocking
+
+Happy Path verification has passed empirically in both Codex e2e24 and e2e25
+runs (50 pytest tests, 77.78% coverage, 6/6 uv lifecycle PASS). The documented
+Quick Start (`bash ./scaffold.sh ...`) works reliably. The silent-no-op only
+manifests when users deviate from the Quick Start in a specific way that is now
+documented here, in SETUP.md § Troubleshooting, and in the Windows warning
+block of Quick Start itself.
+
+### Deferred: Python wrapper (Phase 15 candidate)
+
+A `scaffold.py` wrapper that shells out to bash would let users type
+`python scaffold.py --pkg ...` from any shell (PowerShell, cmd, bash).
+Trade-offs:
+
+- **Prerequisite expansion**: adds Python as a scaffolding prerequisite
+  (currently only needed post-scaffold for uv), contradicting ADR-002's "git
+  is the only prerequisite" principle.
+- **Shim depth illusion**: a thin `subprocess.run(["bash", "scaffold.sh", ...])`
+  wrapper eliminates the PowerShell silent-no-op symptom but still requires
+  `bash` on PATH — if a user has no bash installed at all, the wrapper fails
+  too, just at a different depth ("FileNotFoundError: bash") rather than
+  silently succeeding. A **full** silent-no-op fix that works in a bash-less
+  environment would require reimplementing scaffold.sh's 8-stage pipeline in
+  Python — scope-equivalent to rewriting the script, and needing to track
+  every future scaffold.sh change.
+- **Maintenance surface**: two sources of truth for the scaffolding logic.
+
+Marked as deferred Phase 15 candidate, not a blocker. The accepted-limitation
+framing is preferred until there is concrete user demand for Windows-native
+execution without bash.
