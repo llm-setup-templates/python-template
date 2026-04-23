@@ -9,8 +9,15 @@
 ```bash
 git clone https://github.com/llm-setup-templates/python-template my-app
 cd my-app
-./scaffold.sh --pkg my_app --archetype fastapi
+bash ./scaffold.sh --pkg my_app --archetype fastapi
 ```
+
+> **Run under Bash** — not PowerShell or cmd.exe. On Windows this means
+> Git Bash, WSL, or any shell where `bash --version` prints a version.
+> scaffold.sh contains an interpreter guard that refuses to run under
+> non-bash interpreters (prevents silent-success failures where `.sh`
+> file associations return exit 0 without executing the script body —
+> observed in the e2e24 PowerShell dry run).
 
 Then verify locally:
 
@@ -152,6 +159,7 @@ grep -n "YOUR_ORG\|YOUR_USERNAME" .github/CODEOWNERS  # must be empty
 |---------|-------|----------|
 | `scaffold.sh: /bin/bash^M: bad interpreter` | CRLF line endings (Windows) | `dos2unix scaffold.sh` or re-clone with `core.autocrlf=false` |
 | `ERROR: validate.sh not found` | scaffold.sh already ran once | Re-clone the template — scaffold.sh is single-use |
+| `ERROR: scaffold.sh must be executed by Bash.` | Invoked via PowerShell / cmd / sh (silent-success scenario blocked) | Prefix `bash`: `bash ./scaffold.sh --pkg ... --archetype ...`. On Windows use Git Bash or WSL. |
 | `uv: command not found` | uv not installed | `curl -LsSf https://astral.sh/uv/install.sh \| sh` then restart shell |
 | `Python 3.13 not found` | Python 3.13 missing | `uv python install 3.13` |
 | `basedpyright: reportUnknownMemberType` errors (numpy/pandas) | Wrong archetype used | Re-scaffold with `--archetype data-science` |

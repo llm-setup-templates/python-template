@@ -271,6 +271,40 @@ else
 fi
 
 echo ""
+echo "=== V16: scaffold.sh interpreter guard (Fix 8 / e2e24 PowerShell silent-failure) ==="
+# STATIC-ONLY check. NEVER invoke scaffold.sh from validate.sh — the template
+# directory IS the scaffold target, and an invocation would scaffold it in
+# place. Runtime verification of the guard belongs in scaffold-e2e.sh which
+# operates in a tmpdir copy.
+#
+# [M-01 fix] V16a matches the actual `[ -z ... BASH_VERSION ]` test, not just
+# the string "BASH_VERSION" anywhere (which would false-pass if the guard was
+# removed but a comment retained the word).
+# [M-02 fix] V16b uses the same tighter pattern for GUARD_LINE extraction so
+# it pins to the real test expression, not a doc comment.
+# [M-03 fix in scaffold.sh] The guard checks BASH_VERSION AND $BASH basename.
+# V16c asserts both checks are present.
+GUARD_RE='\[ -z.*BASH_VERSION'
+if grep -qE "$GUARD_RE" "$ROOT/scaffold.sh"; then
+  pass "V16a" "scaffold.sh contains [ -z ... BASH_VERSION ] guard"
+else
+  fail "V16a" "scaffold.sh missing active [ -z ... BASH_VERSION ] guard — silent-success risk"
+fi
+GUARD_LINE=$(grep -nE "$GUARD_RE" "$ROOT/scaffold.sh" | head -1 | cut -d: -f1)
+SET_LINE=$(grep -nE '^set -euo pipefail' "$ROOT/scaffold.sh" | head -1 | cut -d: -f1)
+if [ -n "$GUARD_LINE" ] && [ -n "$SET_LINE" ] && [ "$GUARD_LINE" -lt "$SET_LINE" ]; then
+  pass "V16b" "BASH_VERSION guard precedes 'set -euo pipefail' (line $GUARD_LINE < $SET_LINE)"
+else
+  fail "V16b" "BASH_VERSION guard must appear before 'set -euo pipefail' (guard=$GUARD_LINE set=$SET_LINE)"
+fi
+# V16c: verify the BASH env-injection hardening ($BASH basename check)
+if grep -qE '\$\{BASH##\*/\}' "$ROOT/scaffold.sh"; then
+  pass "V16c" "scaffold.sh has \$BASH basename check (env-injection hardening)"
+else
+  fail "V16c" "scaffold.sh missing \$BASH basename check — PowerShell env-injection bypass possible"
+fi
+
+echo ""
 echo "======================================="
 echo "RESULTS: $PASS passed, $FAIL failed"
 echo "======================================="
