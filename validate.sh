@@ -82,7 +82,7 @@ fi
 check_gte "V3b" "ci.yml runs uv run lint-imports" "$V3_LINT_IMPORTS" "1"
 
 echo ""
-echo "=== V4: regression guards (PR #7 lint-imports wiring) ==="
+echo "=== V4: regression guards (PR #7 lint-imports wiring + PR hardening dependabot + contract count + multi-archetype sync) ==="
 # SETUP.md must reference lint-imports in Local Verify, Success Criteria,
 # and Essential Checklist. CLAUDE.md must reference it too.
 V4_SETUP_LI=$(grep -c "lint-imports" "$ROOT/SETUP.md" || echo 0)
@@ -154,6 +154,41 @@ elif [ "$V9_PRESENT" = "0" ]; then
   echo "SKIP [V9] Extended module not installed"
 else
   fail "V9" "Extended module partial: $V9_PRESENT/3 — must be all or none"
+fi
+
+echo ""
+echo "=== V10: Dependabot config exists (Phase 12 hardening) ==="
+V10_PASS=0
+for f in .github/dependabot.yml examples/dependabot.yml; do
+  if [ -f "$ROOT/$f" ]; then
+    pass "V10" "$f"
+    V10_PASS=$((V10_PASS + 1))
+  else
+    fail "V10" "$f missing"
+  fi
+done
+
+echo ""
+echo "=== V11: import-linter contract count (Phase 12 hardening) ==="
+V11_COUNT=$(grep -c '^\[importlinter:contract:' "$ROOT/examples/.importlinter" || echo 0)
+check_gte "V11" "examples/.importlinter contract count" "$V11_COUNT" "2"
+
+echo ""
+echo "=== V12: Multi-archetype config sync (Phase 12 hardening) ==="
+# ruff select "W" in both main and scientific pyproject
+if grep -q '"W"' "$ROOT/examples/pyproject.toml" && \
+   grep -q '"W"' "$ROOT/examples/pyproject.scientific.toml"; then
+  pass "V12a" "ruff select 'W' present in main + scientific pyproject"
+else
+  fail "V12a" "ruff select 'W' must be present in both examples/pyproject.toml AND examples/pyproject.scientific.toml"
+fi
+
+# pyright exclude "examples" in main + archetype-fastapi
+if grep -qE 'exclude.*examples' "$ROOT/examples/pyproject.toml" && \
+   grep -qE 'exclude.*examples' "$ROOT/examples/archetype-fastapi/pyproject.toml"; then
+  pass "V12b" "pyright exclude 'examples' present in main + fastapi pyproject"
+else
+  fail "V12b" "pyright exclude 'examples' must be present in both examples/pyproject.toml AND examples/archetype-fastapi/pyproject.toml"
 fi
 
 echo ""
