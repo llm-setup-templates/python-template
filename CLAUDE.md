@@ -1,4 +1,4 @@
-# {{PROJECT_NAME}}
+# {{REPO_NAME}}
 
 > Generated from llm-setup-prompts/python-template.
 
