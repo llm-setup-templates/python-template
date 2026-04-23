@@ -37,6 +37,7 @@ dev = [
 target-version = "py313"
 line-length = 88
 src = ["src", "tests"]
+exclude = ["examples"]
 
 [tool.ruff.lint]
 # DISCUSS Q6: PD + PERF + NPY included (not data-science only — applied globally)
@@ -76,5 +77,6 @@ ambiguous-protocol-member = "warn"
 minversion = "9.0"
 # DISCUSS Q4: 60 (not research.md §8.2's 80 — initial adoption baseline)
 # Mature-stage target (80) is documented in README coverage ramp guide
+# Threshold 60% is a starter baseline. Raise to 0.80 once real modules exist (see ADR-001 + SETUP.md § Coverage Threshold Adjustment).
 addopts = "--cov=src/my_project --cov-report=term-missing --cov-fail-under=60 -v"
 testpaths = ["tests"]

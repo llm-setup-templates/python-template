@@ -116,6 +116,16 @@ PKG=$(basename "$PWD" | tr '-' '_')
 echo "Using package: $PKG"
 ```
 
+### Canonical pyproject path
+
+Python template ships with three `pyproject.toml` archetypes:
+
+- `examples/pyproject.toml` — **main archetype** (library / CLI style, default)
+- `examples/pyproject.scientific.toml` — **data-science archetype** (numpy/pandas/scipy relaxation preset)
+- `examples/archetype-fastapi/pyproject.toml` — **FastAPI archetype** (includes `uv.lock`)
+
+Derived repositories copy **only the chosen archetype** to the project root (as `pyproject.toml`). See Phase 3 archetype selection step.
+
 ## 5. Phase 2 — DevDeps Installation
 
 ```bash
@@ -404,9 +414,17 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
   git branch feat/initial-setup && git checkout feat/initial-setup
 fi
 
-# Gate 2: commit message convention
-INVALID=$(git log --format=%s -10 | \
-  grep -vE '^(feat|fix|docs|chore|refactor|test|ci)(\([a-z0-9-]+\))?: .+' || true)
+# Gate 2: check commits since base (initial push falls back to HEAD~10)
+BASE_REF=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null \
+  || git rev-parse --verify main 2>/dev/null \
+  || echo "HEAD~10")
+if [ "$BASE_REF" = "HEAD~10" ]; then
+  INVALID=$(git log --format=%s -10 | \
+    grep -vE '^(feat|fix|docs|chore|refactor|test|ci)(\([a-z0-9-]+\))?: .+' || true)
+else
+  INVALID=$(git log "${BASE_REF}..HEAD" --format=%s | \
+    grep -vE '^(feat|fix|docs|chore|refactor|test|ci)(\([a-z0-9-]+\))?: .+' || true)
+fi
 if [ -n "$INVALID" ]; then
   echo "BLOCKED: commit message convention violation:"
   echo "$INVALID"
@@ -723,6 +741,9 @@ jobs:
       - name: Type check with basedpyright
         run: uv run basedpyright
 
+      - name: Architecture boundary check
+        run: uv run lint-imports
+
   testing:
     name: Unit & Snapshot Tests
     runs-on: ubuntu-latest
@@ -802,3 +823,19 @@ All `{{...}}` placeholders in this template (enumerated — NOT a placeholder it
 | Placeholder | Scope | Filled by | Example |
 |---|---|---|---|
 | `{{PROJECT_NAME}}` | Phase 0 + Phase 1 | user input at runtime | `my_project` |
+
+### § Coverage Threshold Adjustment
+
+The default `--cov-fail-under=60` in `pyproject.toml` is a **starter baseline** calibrated for day-0 scaffold green. Raise the threshold when any of these trigger:
+
+- **Team size ≥ 5** — more contributors increases regression risk
+- **Audit / compliance scope** — regulated or reviewed codebases
+- **Production deployment** — real users depending on correctness
+
+**How to raise**:
+```toml
+# In pyproject.toml [tool.pytest.ini_options]
+addopts = "--cov=src/my_project --cov-report=term-missing --cov-fail-under=80 -v"
+```
+
+**Do not lower below 60%** without recording an ADR that supersedes `ADR-001-pytest-cov-threshold.md`. The 60% floor is the minimum agreed-upon signal-to-noise for this template's Python stack (see ADR-001 for rationale).

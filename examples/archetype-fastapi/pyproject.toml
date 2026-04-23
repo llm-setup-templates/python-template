@@ -56,7 +56,7 @@ pythonVersion = "3.13"
 typeCheckingMode = "strict"
 reportMissingTypeStubs = true
 reportEmptyAbstractUsage = "error"
-exclude = [".venv"]
+exclude = ["examples", ".venv"]
 
 # === Data-science archetype (numpy/pandas/scipy): uncomment lines below ===
 # Relaxes false positives from incomplete scientific library stubs.
