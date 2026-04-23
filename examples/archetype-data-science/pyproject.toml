@@ -1,0 +1,73 @@
+[project]
+name = "my_project"
+version = "0.1.0"
+description = "2026 Python Fail-Fast Scaffolded Project — Data-science archetype (numpy / pandas / scipy)"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # Data-science archetype — scientific stack
+    "numpy>=2.0.0",
+    "pandas>=2.2.0",
+    "scipy>=1.14.0",
+]
+
+[project.scripts]
+my_project = "my_project.pipeline:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.0",
+    "basedpyright>=1.39.0",
+    "ty>=0.0.29",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "syrupy>=5.1.0",         # only for non-floating-point snapshots
+    "pre-commit>=4.5.0",
+    "import-linter>=2.1",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+# Data-science archetype: NPY + PD + PERF emphasis (already included globally)
+select = ["E", "W", "F", "I", "UP", "B", "S", "PERF", "PD", "NPY", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = true
+reportEmptyAbstractUsage = "error"
+exclude = ["examples", ".venv"]
+
+# === Data-science archetype relaxation (numpy / pandas / scipy stubs are incomplete) ===
+# These 3 are the canonical relaxation set. Do NOT add more without documenting an ADR.
+reportUnknownMemberType = false
+reportUnknownArgumentType = false
+reportUnknownVariableType = false
+
+[tool.ty.rules]
+call-non-callable = "error"
+override-of-final-method = "error"
+ambiguous-protocol-member = "warn"
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+# Data-science archetype: floating-point tests use tests/regression/ with numpy.testing.assert_allclose
+# (not syrupy — see SETUP.md Troubleshooting). Coverage path unchanged.
+addopts = "--cov=src/my_project --cov-report=term-missing --cov-fail-under=60 -v"
+testpaths = ["tests"]

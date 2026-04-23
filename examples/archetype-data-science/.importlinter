@@ -1,0 +1,13 @@
+[importlinter]
+root_package = my_project
+include_external_packages = True
+
+[importlinter:contract:pipeline-isolation]
+name = Pipeline Layer Framework Isolation (Data-science archetype)
+type = forbidden
+source_modules =
+    my_project.pipeline
+forbidden_modules =
+    fastapi
+    sqlalchemy
+    httpx

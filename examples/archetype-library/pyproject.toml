@@ -1,0 +1,63 @@
+[project]
+name = "my_project"
+version = "0.1.0"
+description = "2026 Python Fail-Fast Scaffolded Project — Library / CLI archetype"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # Library / CLI archetype — no web framework deps
+    "typer>=0.15.0",
+    "rich>=13.9.0",
+]
+
+[project.scripts]
+my_project = "my_project.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.0",
+    "basedpyright>=1.39.0",
+    "ty>=0.0.29",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "syrupy>=5.1.0",
+    "pre-commit>=4.5.0",
+    "import-linter>=2.1",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "S", "PERF", "PD", "NPY", "RUF"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = true
+reportEmptyAbstractUsage = "error"
+exclude = ["examples", ".venv"]
+
+[tool.ty.rules]
+call-non-callable = "error"
+override-of-final-method = "error"
+ambiguous-protocol-member = "warn"
+
+[tool.pytest.ini_options]
+minversion = "9.0"
+addopts = "--cov=src/my_project --cov-report=term-missing --cov-fail-under=60 -v"
+testpaths = ["tests"]
