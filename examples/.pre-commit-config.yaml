@@ -14,3 +14,10 @@ repos:
         entry: uv run basedpyright
         types: [python]
         pass_filenames: false
+      - id: lint-imports
+        name: import-linter architecture check
+        language: system
+        entry: uv run lint-imports
+        types: [python]
+        pass_filenames: false
+        stages: [pre-push]
