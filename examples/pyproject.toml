@@ -7,7 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     # FastAPI archetype default — remove for Library/Data-science
     "fastapi>=0.115.0",
-    "uvicorn>=0.32.0",
+    "uvicorn>=0.46.0",
     "pydantic>=2.9.0",
     "pydantic-settings>=2.5",  # environment variable config binding standard
     "loguru>=0.7.0",           # FastAPI archetype: structured logging (core/logging.py)
