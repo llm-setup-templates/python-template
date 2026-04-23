@@ -30,7 +30,25 @@ rm -rf "$DERIVED/.git" "$DERIVED/test"
 
 cd "$DERIVED"
 
-# 2. Run scaffold.sh
+# 2a. Runtime guard check: scaffold.sh must refuse non-bash invocation.
+# We verify by spawning a fresh process WITHOUT BASH_VERSION in the env.
+# `env -u BASH_VERSION bash` still re-sets BASH_VERSION on startup, so we
+# use dash if available (POSIX, no BASH_VERSION). If dash is absent (common
+# on Windows Git Bash), SKIP this sub-check — CI Linux always has dash.
+if command -v dash >/dev/null 2>&1; then
+  if dash scaffold.sh --pkg dummy_pkg --archetype fastapi >/dev/null 2>&1; then
+    echo "FAIL: scaffold.sh ran under dash without BASH_VERSION — guard ineffective"
+    exit 1
+  fi
+  # Confirm the script is still intact (guard exited cleanly, didn't partially scaffold)
+  test -f validate.sh || { echo "FAIL: dash invocation partially scaffolded (validate.sh gone)"; exit 1; }
+  test -f scaffold.sh || { echo "FAIL: dash invocation removed scaffold.sh"; exit 1; }
+  echo "[e2e] runtime guard PASS — dash invocation rejected, template unchanged"
+else
+  echo "[e2e] dash not available — skipping runtime guard check (covered by V16 static + CI Linux)"
+fi
+
+# 2b. Run scaffold.sh (real)
 bash scaffold.sh --pkg my_test_app --archetype "$ARCHETYPE"
 
 # 3. Verify post-conditions

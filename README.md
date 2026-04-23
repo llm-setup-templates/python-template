@@ -10,9 +10,13 @@
 ```bash
 git clone https://github.com/llm-setup-templates/python-template my-app
 cd my-app
-./scaffold.sh --pkg my_app --archetype fastapi
+bash ./scaffold.sh --pkg my_app --archetype fastapi
 uv sync && uv run pytest
 ```
+
+> Run under **Bash** (Git Bash / WSL on Windows). scaffold.sh refuses to
+> run under PowerShell or cmd.exe (see the guard at its top, added after
+> the e2e24 dry run exposed a silent-success failure mode).
 
 See [SETUP.md](SETUP.md) for all options (library / data-science archetypes,
 doc module selection, optional GitHub publish step) and

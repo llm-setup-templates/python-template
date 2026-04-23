@@ -9,6 +9,36 @@
 # (detected via presence of validate.sh). After execution, it self-deletes.
 #
 # See ADR-002 for architecture rationale.
+
+# ────────────────────────────────────────────────────────────────
+# Bash interpreter guard [Fix 8 / e2e24 PowerShell silent-failure]
+# Windows PowerShell can invoke `./scaffold.sh` via .sh file association
+# without actually running bash — exit 0 with no side effects. That silent
+# success is more dangerous than a visible failure because users believe
+# scaffolding succeeded. This guard refuses to run under any non-bash
+# interpreter and instructs the user to prefix `bash `.
+# ────────────────────────────────────────────────────────────────
+# BASH_VERSION: bash-only shell variable (dash/ash/zsh/PowerShell do not set it).
+# BASH: bash-only shell variable holding the full path to the bash binary.
+# Checking BOTH closes the M-03 edge case where a parent PowerShell process
+# exports BASH_VERSION into the environment and a non-bash child inherits it.
+_not_bash=0
+[ -z "${BASH_VERSION:-}" ] && _not_bash=1
+[ -z "${BASH:-}" ] && _not_bash=1
+case "${BASH##*/}" in
+  bash|bash.exe) ;;
+  *) _not_bash=1 ;;
+esac
+if [ "$_not_bash" -eq 1 ]; then
+  echo "ERROR: scaffold.sh must be executed by Bash." >&2
+  echo "       Detected: non-bash interpreter (likely PowerShell/cmd/sh)." >&2
+  echo "       Fix: run with an explicit bash prefix:" >&2
+  echo "         bash ./scaffold.sh --pkg <name> --archetype <type>" >&2
+  echo "       On Windows, prefer Git Bash or WSL over PowerShell." >&2
+  exit 1
+fi
+unset _not_bash
+
 set -euo pipefail
 
 # ────────────────────────────────────────────────────────────────
