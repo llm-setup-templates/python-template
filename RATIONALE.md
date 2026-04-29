@@ -189,6 +189,53 @@ solutions with no shared skeleton or cross-language convention.
 
 ---
 
+## Template Boundary: what the scaffold covers vs what users add
+
+A recurring question from users of `archetype-fastapi` is: "why is
+there no database / auth / queue layer out of the box?" This section
+answers that explicitly so derived-project owners can plan their
+roadmap.
+
+**The scaffold ships exactly the substrate that *every* FastAPI
+project needs**, regardless of domain:
+
+- App entry, routers package, services / repositories / handlers
+  empty packages (project shape)
+- `core/logging.py` — Loguru env-aware console + JSON + rotation
+- `core/context.py` — Trace-ID `ContextVar` (middleware not yet wired —
+  Phase 13e candidate)
+- `core/exceptions.py` + `handlers/exception.py` — global exception
+  handler with consistent error envelope
+- `pydantic-settings` baseline for environment-bound config
+- CI quality gates: basedpyright strict, ruff, pytest-cov ≥ 60 %,
+  import-linter
+
+**Everything else is intentionally a user choice**:
+
+- **Database & ORM** (PostgreSQL + SQLModel? MongoDB + Motor? DuckDB
+  for analytics?) — the right answer depends on data shape, not on
+  the framework.
+- **Authentication** (JWT? sessions? OAuth via a provider?
+  passwordless?) — coupling the template to one of these would force
+  the other half of users to delete code on day one.
+- **Cache / Queue** (Redis + Celery? RabbitMQ + arq? cloud-managed
+  queues?) — adopt only when the workload actually requires durable
+  background work.
+- **Deployment surface** (ECS, EKS, Heroku, Fly, self-hosted) — every
+  shape has its own CI tail, and "the template's CI" is a quality
+  gate, not a deploy pipeline.
+
+For a curated sequence in which to add these layers, see
+[`docs/learning-paths/fastapi-production-roadmap.md`](./docs/learning-paths/fastapi-production-roadmap.md).
+
+The framing matters because the template is meant to be **forked into
+real projects**, not consumed as-is. Forcing opinionated layers in the
+common scaffold would push the cost of removing them onto every fork.
+The Template Boundary is the line where common-denominator stops and
+project-specific begins.
+
+---
+
 ## See also
 
 - [README.md](./README.md) — 30-second fit check and quick start
