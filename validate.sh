@@ -37,6 +37,42 @@ check_gte() {
   fi
 }
 
+# F1 4 subfacet acceptance — see .claude/rules/plan-review-deep.md §1
+# Each subfacet's verification is the corresponding V/scaffold-e2e block
+# below. CI source-greps `echo "=== F1.x ...` to count 4 headers (F1.a-F1.d).
+echo "=== F1.a Reproducible Failure ==="
+echo "=== F1.b Staged Gate ==="
+echo "=== F1.c Immutable Verification ==="
+echo "=== F1.d Full-Solution Verification ==="
+
+echo "=== V0a Self-monolithic guard ==="
+for spec in "validate.sh:400" "scaffold.sh:395"; do
+  f="${spec%%:*}"; limit="${spec##*:}"
+  n=$(wc -l < "$f")
+  [[ $n -le $limit ]] || { echo "FAIL: V0a $f has $n lines (limit $limit). 14a 자체 ratchet 금지 — STOP and request R5 refine."; exit 1; }
+done
+n=$(wc -l < SETUP.md)
+[[ $n -le 250 ]] || { echo "FAIL: V0a SETUP.md has $n lines (limit 250)."; exit 1; }
+[[ $n -le 220 ]] || echo "WARN: V0a SETUP.md has $n lines (soft 220; hard 250). Action required before next PR merge."
+
+echo "=== V0e §0 schema guard ==="
+grep -q '^## §0 Phase 0: System Overview' SETUP.md || { echo "FAIL: V0e §0 header missing"; exit 1; }
+grep -q '^```mermaid' SETUP.md || { echo "FAIL: V0e Mermaid block missing"; exit 1; }
+for node in clone scaffold verify ci; do
+  grep -qE "(^|[^[:alnum:]_-])${node}([^[:alnum:]_-]|$)" SETUP.md || { echo "FAIL: V0e core node ${node} missing"; exit 1; }
+done
+grep -q 'Change blast radius' SETUP.md || { echo "FAIL: V0e ENV column 'Change blast radius' missing"; exit 1; }
+for h in 'Adding a new archetype' 'Adding a new verify step' 'Adding a new env dependency' 'Phase E (DDD/TDD) stack hook'; do
+  # NOTE: Use grep -q (BRE) NOT grep -qE — heading text contains literal `(`, `)`, `/`
+  grep -q "^### ${h}" SETUP.md || { echo "FAIL: V0e Extension Points heading '${h}' missing"; exit 1; }
+done
+
+echo "=== V_seed Worked example seed ==="
+seed=$(find examples/archetype-fastapi/src -name '*.py' -path '*/handlers/*' 2>/dev/null | sort | head -1 || true)
+[[ -n "$seed" && -f "$seed" ]] || { echo "FAIL: V_seed missing handlers/*.py"; exit 1; }
+grep -qE '^[[:space:]]*(pass|raise NotImplementedError\b.*|\.\.\.)[[:space:]]*$' "$seed" && { echo "FAIL: V_seed stub phrase in $seed"; exit 1; }
+[[ $(wc -l < "$seed") -ge 5 ]] || { echo "FAIL: V_seed $seed has < 5 lines"; exit 1; }
+
 echo "=== V1: SETUP.md residual placeholders (only REPO_NAME + VISIBILITY allowed) ==="
 # REPO_NAME / VISIBILITY are the two canonical runtime-filled placeholders
 # (see SETUP.md § Placeholder Index). Any other {{CAPS}} token is residual.
