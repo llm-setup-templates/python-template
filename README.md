@@ -113,6 +113,19 @@ Not sure? Start with **Library / CLI** -- it is the simplest. You can migrate be
 
 ---
 
+## Available skills
+
+Skills are Claude Code agent prompts in `.claude/skills/`. Each skill is invoked with `/skill-name`.
+
+- **`claude-md-reviewer`** (`.claude/skills/claude-md-reviewer/`) — Reviews CLAUDE.md for completeness and consistency.
+- **`tdd`** (`.claude/skills/tdd/`) — Test-driven development with red-green-refactor.
+  Vendored verbatim from mattpocock/skills (MIT). See `UPSTREAM.md` + `_local-addendum.md`.
+- **`office-hours-ddd-discovery`** (`.claude/skills/office-hours-ddd-discovery/`) —
+  Six forcing questions adapted for DDD bounded context discovery. Adapted from
+  garrytan/gstack (MIT). Note: archetype 없음 → companion 6Q×DDD doc deferred to Phase G.
+
+---
+
 ## Related templates
 
 - [typescript-template](https://github.com/llm-setup-templates/typescript-template) -- Next.js 15 + FSD 5 layers
