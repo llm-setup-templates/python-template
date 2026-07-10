@@ -1,6 +1,6 @@
-# FR-XX: <one-line imperative title>
+# FR-{DOMAIN}-{NNN}: <one-line imperative title>
 
-> **Copy this file.** Rename to `FR-XX-<slug>.md`, remove the leading
+> **Copy this file.** Rename to `FR-{DOMAIN}-{NNN}-<slug>.md`, remove the leading
 > underscore, fill in every section. Add the row to `RTM.md` in the
 > same PR.
 
@@ -8,7 +8,7 @@
 
 ## Metadata
 
-- **FR ID**: FR-XX
+- **FR ID**: FR-{DOMAIN}-{NNN}
 - **Status**: Draft / Design / Implementing / Done / Deprecated
 - **GitHub Issue**: #NNN
 - **Related ADRs**: ADR-NNN (optional)
@@ -66,7 +66,7 @@ ambiguity. An LLM implementing from this spec should produce one
 compilable service function.
 
 ```
-BEGIN FR-XX (in ExampleService.run, async, within AsyncSession context)
+BEGIN FR-{DOMAIN}-{NNN} (in ExampleService.run, async, within AsyncSession context)
   VALIDATE input via Pydantic (automatic at the FastAPI layer)
   user = AWAIT userRepository.get_by_id(example_id)
   IF user IS NONE THEN
@@ -77,7 +77,7 @@ BEGIN FR-XX (in ExampleService.run, async, within AsyncSession context)
   END IF
   AWAIT analyticsEventsRepository.insert(event_type="example_accessed", user_id=user.id)
   RETURN ExampleResponseSchema.model_validate(user)
-END FR-XX
+END FR-{DOMAIN}-{NNN}
 ```
 
 Global exception handlers in `handlers/exception.py` convert each
