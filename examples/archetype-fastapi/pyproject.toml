@@ -30,7 +30,10 @@ dev = [
     "syrupy>=5.1.0",
     "pre-commit>=4.5.0",
     "import-linter>=2.1",
-    "httpx>=0.28.1",
+    # starlette>=1.0 imports httpx2 under TYPE_CHECKING, so a type checker
+    # sees Unknown for every TestClient response unless httpx2 is installed.
+    # Runtime still falls back to httpx, but with a deprecation warning.
+    "httpx2>=2.5.0",
 ]
 
 [tool.ruff]
