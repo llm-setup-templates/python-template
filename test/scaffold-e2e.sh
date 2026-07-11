@@ -100,13 +100,13 @@ case "$ARCHETYPE" in
     ;;
 esac
 
-# CLAUDE.md {{REPO_NAME}} substitution
-if ! grep -q '^# my-test-app' CLAUDE.md; then
-  echo "FAIL: CLAUDE.md {{REPO_NAME}} not substituted (expected '# my-test-app')"
+# AGENTS.md {{REPO_NAME}} substitution
+if ! grep -q '^# my-test-app' AGENTS.md; then
+  echo "FAIL: AGENTS.md {{REPO_NAME}} not substituted (expected '# my-test-app')"
   exit 1
 fi
-if grep -q '{{REPO_NAME}}' CLAUDE.md; then
-  echo "FAIL: CLAUDE.md still contains {{REPO_NAME}} placeholder"
+if grep -q '{{REPO_NAME}}' AGENTS.md; then
+  echo "FAIL: AGENTS.md still contains {{REPO_NAME}} placeholder"
   exit 1
 fi
 

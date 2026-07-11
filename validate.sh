@@ -82,7 +82,7 @@ check_present_eq "V1" "SETUP.md residual placeholders" "$V1_COUNT" "0"
 echo ""
 echo "=== V2: Required files exist (original set + Phase 5.5 Core) ==="
 REQUIRED=(
-  SETUP.md CLAUDE.md README.md
+  SETUP.md CLAUDE.md AGENTS.md README.md
   .claude/rules/architecture.md .claude/rules/code-style.md
   .claude/rules/git-workflow.md .claude/rules/test-modification.md
   .claude/rules/verification-loop.md
@@ -123,11 +123,11 @@ echo ""
 echo "=== V4: regression guards (lint-imports wiring in SETUP/CLAUDE + import-linter dep in archetype pyprojects) ==="
 # Post-Phase-13: SETUP.md is the scaffold.sh reference guide (not phase-by-phase).
 # It must reference lint-imports (the command) in Quick Start + Verification sections.
-# CLAUDE.md (template) continues to reference lint-imports in Primary Commands.
+# AGENTS.md (template) continues to reference lint-imports in Primary Commands.
 # The import-linter PACKAGE dep is enforced in archetype pyproject.toml files
 # (since Phase 13 moved pyproject out of SETUP.md Appendix into examples/).
 V4_SETUP_LI=$(grep -c "lint-imports" "$ROOT/SETUP.md" || echo 0)
-V4_CLAUDE_LI=$(grep -c "lint-imports" "$ROOT/CLAUDE.md" || echo 0)
+V4_CLAUDE_LI=$(grep -c "lint-imports" "$ROOT/AGENTS.md" || echo 0)
 V4_ARCHETYPE_DEPS=0
 for f in \
   examples/archetype-fastapi/pyproject.toml \
@@ -138,7 +138,7 @@ for f in \
   fi
 done
 check_gte "V4a" "SETUP.md references lint-imports (>= 2: Quick Start + Verification)" "$V4_SETUP_LI" "2"
-check_gte "V4b" "CLAUDE.md Primary Commands reference lint-imports" "$V4_CLAUDE_LI" "1"
+check_gte "V4b" "AGENTS.md Primary Commands reference lint-imports" "$V4_CLAUDE_LI" "1"
 check_present_eq "V4c" "all 3 archetype pyprojects declare import-linter dep" "$V4_ARCHETYPE_DEPS" "3"
 
 echo ""

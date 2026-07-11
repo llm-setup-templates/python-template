@@ -252,8 +252,8 @@ echo "[Stage D] Substitute placeholders"
 substitute 'my_project' "$PKG" pyproject.toml
 substitute 'my_project' "$PKG" .importlinter
 
-# CLAUDE.md: {{REPO_NAME}} -> basename
-substitute '{{REPO_NAME}}' "$REPO_NAME" CLAUDE.md
+# AGENTS.md: {{REPO_NAME}} -> basename
+substitute '{{REPO_NAME}}' "$REPO_NAME" AGENTS.md
 
 # Rename src/my_project -> src/$PKG
 if [[ $DRY_RUN -eq 0 && "$PKG" != "my_project" ]]; then
