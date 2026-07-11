@@ -26,13 +26,13 @@ flowchart LR
 | `BASE_PACKAGE` | scaffold param | required | medium |
 | `PROJECT_NAME` | scaffold param | required | low |
 | `.github/workflows/validate.yml` | CI workflow | committed | medium |
-| `.claude/rules/plan-review-deep.md` | governance | byte-identical 3 templates | high |
+| `.agents/rules/plan-review-deep.md` | governance | byte-identical 3 templates | high |
 
 ### Adding a new archetype
 Add a directory under `examples/` (e.g., `examples/archetype-cli`) and update `scaffold.sh` archetype dispatch + the archetypes subgraph above. Phase 14b is the canonical Phase for archetype expansion.
 
 ### Adding a new verify step
-Add a new `=== V<N> <name> ===` block to `validate.sh` AFTER V0a/V0e/V_seed and BEFORE V1+. Update F1 echo headers if the step exposes a new failure surface. See `.claude/rules/plan-review-deep.md` Section 2.
+Add a new `=== V<N> <name> ===` block to `validate.sh` AFTER V0a/V0e/V_seed and BEFORE V1+. Update F1 echo headers if the step exposes a new failure surface. See `.agents/rules/plan-review-deep.md` Section 2.
 
 ### Adding a new env dependency
 Add a row to the ENV table above and rate its blast radius (low/medium/high). If required for `validate.sh` to run, add a presence guard at the top of `validate.sh`.
@@ -96,7 +96,7 @@ Optional:
 | A | Remove template-only files (`validate.sh`, `.github/workflows/validate.yml`, template dependabot, `RATIONALE.md`, `test/`, ADR-002). Keeps `.claude/` (agent rules) + `examples/` (used by Stage B). |
 | B | Select archetype-specific pyproject.toml / .importlinter / src/ / tests/ from `examples/archetype-<type>/`. |
 | C | Copy archetype files + shared configs (`ci.yml`, `.pre-commit-config.yaml`, `.python-version`, `.gitignore`) to repo root. |
-| D | Substitute `my_project` → `$PKG` in pyproject, importlinter, and all .py files. Substitute `{{REPO_NAME}}` → `$(basename $PWD)` in CLAUDE.md. Rename `src/my_project/` → `src/$PKG/`. |
+| D | Substitute `my_project` → `$PKG` in pyproject, importlinter, and all .py files. Substitute `{{REPO_NAME}}` → `$(basename $PWD)` in AGENTS.md. Rename `src/my_project/` → `src/$PKG/`. |
 | E | Trim unselected doc modules (rm `docs/reports/`, `docs/briefings/`, or `docs/architecture/containers.md + DFD.md + docs/data/` as requested). |
 | F | Remove `examples/` (no longer needed in derived repo). |
 | G | `rm -rf .git && git init -b main` (fresh history — template history is not inherited). |
@@ -234,7 +234,7 @@ grep -n "YOUR_ORG\|YOUR_USERNAME" .github/CODEOWNERS  # must be empty
 
 | Placeholder | Scope | Filled by | Case / Format | Example |
 |---|---|---|---|---|
-| `{{REPO_NAME}}` | `CLAUDE.md` title | scaffold.sh Stage D | hyphen-case (directory basename) | `my-awesome-app` |
+| `{{REPO_NAME}}` | `AGENTS.md` title | scaffold.sh Stage D | hyphen-case (directory basename) | `my-awesome-app` |
 
 `$PKG` is **not a placeholder** — it's the `--pkg` flag value passed to
 scaffold.sh, substituted into `pyproject.toml`, `.importlinter`, and all

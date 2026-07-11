@@ -74,8 +74,8 @@ if [[ "$(uname -s)" == Linux* || "$(uname -s)" == Darwin* ]]; then
 fi
 
 # .claude/ must be preserved (derived repo agent rules)
-test -d .claude/rules || { echo "FAIL: .claude/rules/ missing"; exit 1; }
-test -f .claude/rules/documentation.md || { echo "FAIL: .claude/rules/documentation.md missing"; exit 1; }
+test -d .agents/rules || { echo "FAIL: .agents/rules/ missing"; exit 1; }
+test -f .agents/rules/documentation.md || { echo "FAIL: .agents/rules/documentation.md missing"; exit 1; }
 
 # Archetype-specific checks
 case "$ARCHETYPE" in
@@ -100,13 +100,13 @@ case "$ARCHETYPE" in
     ;;
 esac
 
-# CLAUDE.md {{REPO_NAME}} substitution
-if ! grep -q '^# my-test-app' CLAUDE.md; then
-  echo "FAIL: CLAUDE.md {{REPO_NAME}} not substituted (expected '# my-test-app')"
+# AGENTS.md {{REPO_NAME}} substitution
+if ! grep -q '^# my-test-app' AGENTS.md; then
+  echo "FAIL: AGENTS.md {{REPO_NAME}} not substituted (expected '# my-test-app')"
   exit 1
 fi
-if grep -q '{{REPO_NAME}}' CLAUDE.md; then
-  echo "FAIL: CLAUDE.md still contains {{REPO_NAME}} placeholder"
+if grep -q '{{REPO_NAME}}' AGENTS.md; then
+  echo "FAIL: AGENTS.md still contains {{REPO_NAME}} placeholder"
   exit 1
 fi
 

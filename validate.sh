@@ -37,7 +37,7 @@ check_gte() {
   fi
 }
 
-# F1 4 subfacet acceptance -- see .claude/rules/plan-review-deep.md Section 1
+# F1 4 subfacet acceptance -- see .agents/rules/plan-review-deep.md Section 1
 # Each subfacet's verification is the corresponding V/scaffold-e2e block
 # below. CI source-greps `echo "=== F1.x ...` to count 4 headers (F1.a-F1.d).
 echo "=== F1.a Reproducible Failure ==="
@@ -82,11 +82,11 @@ check_present_eq "V1" "SETUP.md residual placeholders" "$V1_COUNT" "0"
 echo ""
 echo "=== V2: Required files exist (original set + Phase 5.5 Core) ==="
 REQUIRED=(
-  SETUP.md CLAUDE.md README.md
-  .claude/rules/architecture.md .claude/rules/code-style.md
-  .claude/rules/git-workflow.md .claude/rules/test-modification.md
-  .claude/rules/verification-loop.md
-  .claude/rules/documentation.md
+  SETUP.md CLAUDE.md AGENTS.md README.md
+  .agents/rules/architecture.md .agents/rules/code-style.md
+  .agents/rules/git-workflow.md .agents/rules/test-modification.md
+  .agents/rules/verification-loop.md
+  .agents/rules/documentation.md
   examples/ci.yml examples/pyproject.toml examples/.pre-commit-config.yaml
   examples/.importlinter examples/.python-version
   .github/ISSUE_TEMPLATE/feature.yml .github/ISSUE_TEMPLATE/bug.yml
@@ -123,11 +123,11 @@ echo ""
 echo "=== V4: regression guards (lint-imports wiring in SETUP/CLAUDE + import-linter dep in archetype pyprojects) ==="
 # Post-Phase-13: SETUP.md is the scaffold.sh reference guide (not phase-by-phase).
 # It must reference lint-imports (the command) in Quick Start + Verification sections.
-# CLAUDE.md (template) continues to reference lint-imports in Primary Commands.
+# AGENTS.md (template) continues to reference lint-imports in Primary Commands.
 # The import-linter PACKAGE dep is enforced in archetype pyproject.toml files
 # (since Phase 13 moved pyproject out of SETUP.md Appendix into examples/).
 V4_SETUP_LI=$(grep -c "lint-imports" "$ROOT/SETUP.md" || echo 0)
-V4_CLAUDE_LI=$(grep -c "lint-imports" "$ROOT/CLAUDE.md" || echo 0)
+V4_CLAUDE_LI=$(grep -c "lint-imports" "$ROOT/AGENTS.md" || echo 0)
 V4_ARCHETYPE_DEPS=0
 for f in \
   examples/archetype-fastapi/pyproject.toml \
@@ -138,7 +138,7 @@ for f in \
   fi
 done
 check_gte "V4a" "SETUP.md references lint-imports (>= 2: Quick Start + Verification)" "$V4_SETUP_LI" "2"
-check_gte "V4b" "CLAUDE.md Primary Commands reference lint-imports" "$V4_CLAUDE_LI" "1"
+check_gte "V4b" "AGENTS.md Primary Commands reference lint-imports" "$V4_CLAUDE_LI" "1"
 check_present_eq "V4c" "all 3 archetype pyprojects declare import-linter dep" "$V4_ARCHETYPE_DEPS" "3"
 
 echo ""
@@ -349,7 +349,7 @@ echo "=== V_drift: 5-keyword + line count + negation + SHA256 ==="
 v_drift_failed=0
 vdrift_root="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 # Step 1+1b: extract Section 5 body + narrow to numbered 5-line checklist (CX2-2: || true)
-section5_body=$(awk '/^## 5\. Phase E entry rubric$/ { f=1; next } f && /^## 6\./ { exit } f { print }' "$vdrift_root/.claude/rules/plan-review-deep.md" 2>/dev/null | tr -d '\r' || true)
+section5_body=$(awk '/^## 5\. Phase E entry rubric$/ { f=1; next } f && /^## 6\./ { exit } f { print }' "$vdrift_root/.agents/rules/plan-review-deep.md" 2>/dev/null | tr -d '\r' || true)
 [ -n "$section5_body" ] || { echo "FAIL: V_drift Section 5 extraction failed (header missing)"; v_drift_failed=1; }
 section5_checklist=$(printf '%s\n' "$section5_body" | grep -E '^[1-5]\. (Flexibility|Universality|Convention precedence|Contract test specifications|Opt-in examples)' || true)
 section5_checklist_count=$(printf '%s\n' "$section5_checklist" | grep -c '^[1-5]\. ' || true)

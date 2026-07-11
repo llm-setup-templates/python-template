@@ -55,7 +55,7 @@ CI system can verify on the first push".
 ### smartwhale8/claude-playbook
 
 smartwhale8/claude-playbook is a **language-neutral `.claude/` template**.
-It provides a production-ready `.claude/rules/` + skills + agents
+It provides a production-ready `.agents/rules/` + skills + agents
 structure, but:
 
 - No Python-specific tooling (Ruff, basedpyright, uv, pytest)
@@ -182,7 +182,7 @@ framework-agnostic.
 This template is part of `llm-setup-prompts` — a **3-language unified
 scaffolding workspace** (TypeScript + Spring + Python). All three
 language templates share the same 14-section SETUP.md skeleton,
-`.claude/rules/` structure, and Git workflow conventions. That
+`.agents/rules/` structure, and Git workflow conventions. That
 cross-language consistency is the feature that none of the three
 competitor templates above can replicate — they are each single-language
 solutions with no shared skeleton or cross-language convention.
@@ -242,7 +242,7 @@ project-specific begins.
 - [SETUP.md](./SETUP.md) — scaffold.sh usage guide (post-Phase-13 architecture)
 - [ADR-002](./docs/architecture/decisions/ADR-002-clone-script-scaffolding.md)
   — why the pre-Phase-13 14-phase SETUP.md flow was replaced with clone + script
-- [CLAUDE.md](./CLAUDE.md) — AI agent rules for derived projects
+- [AGENTS.md](./AGENTS.md) — AI agent rules for derived projects (Claude Code loads it via the CLAUDE.md import shell)
 - External references (snapshot as of 2026-04):
   - [mpuig/claude-code-py-template](https://github.com/mpuig/claude-code-py-template)
   - [smartwhale8/claude-playbook](https://github.com/smartwhale8/claude-playbook)
