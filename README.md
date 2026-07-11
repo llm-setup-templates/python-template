@@ -105,11 +105,11 @@ Not sure? Start with **Library / CLI** -- it is the simplest. You can migrate be
 ## What's inside
 
 - Setup flow: [SETUP.md](./SETUP.md) -- the LLM agent reads this top-to-bottom (14 phases)
-- AI agent rules: [CLAUDE.md](./CLAUDE.md) -- tech stack, primary commands, verification checklist
-- Architecture boundaries: [.claude/rules/architecture.md](./.claude/rules/architecture.md) -- src layout, import directions, exception hierarchy
-- Verification loop: [.claude/rules/verification-loop.md](./.claude/rules/verification-loop.md) -- the 6-slot fail-fast sequence
-- Test modification rules: [.claude/rules/test-modification.md](./.claude/rules/test-modification.md) -- when tests must change and how
-- Documentation modules: [.claude/rules/documentation.md](./.claude/rules/documentation.md) -- FR / RTM / ADR / RFC / reports
+- AI agent rules: [AGENTS.md](./AGENTS.md) -- tech stack, primary commands, verification checklist (Claude Code loads it via the CLAUDE.md import shell)
+- Architecture boundaries: [.agents/rules/architecture.md](./.agents/rules/architecture.md) -- src layout, import directions, exception hierarchy
+- Verification loop: [.agents/rules/verification-loop.md](./.agents/rules/verification-loop.md) -- the 6-slot fail-fast sequence
+- Test modification rules: [.agents/rules/test-modification.md](./.agents/rules/test-modification.md) -- when tests must change and how
+- Documentation modules: [.agents/rules/documentation.md](./.agents/rules/documentation.md) -- FR / RTM / ADR / RFC / reports
 
 ---
 
@@ -117,7 +117,7 @@ Not sure? Start with **Library / CLI** -- it is the simplest. You can migrate be
 
 Skills are Claude Code agent prompts in `.claude/skills/`. Each skill is invoked with `/skill-name`.
 
-- **`claude-md-reviewer`** (`.claude/skills/claude-md-reviewer/`) — Reviews CLAUDE.md for completeness and consistency.
+- **`claude-md-reviewer`** (`.claude/skills/claude-md-reviewer/`) — Reviews the AGENTS.md rules body (and its CLAUDE.md import shell) for completeness and consistency.
 - **`tdd`** (`.claude/skills/tdd/`) — Test-driven development with red-green-refactor.
   Vendored verbatim from mattpocock/skills (MIT). See `UPSTREAM.md` + `_local-addendum.md`.
 - **`office-hours-ddd-discovery`** (`.claude/skills/office-hours-ddd-discovery/`) —
