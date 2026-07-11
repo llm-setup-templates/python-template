@@ -74,8 +74,8 @@ if [[ "$(uname -s)" == Linux* || "$(uname -s)" == Darwin* ]]; then
 fi
 
 # .claude/ must be preserved (derived repo agent rules)
-test -d .claude/rules || { echo "FAIL: .claude/rules/ missing"; exit 1; }
-test -f .claude/rules/documentation.md || { echo "FAIL: .claude/rules/documentation.md missing"; exit 1; }
+test -d .agents/rules || { echo "FAIL: .agents/rules/ missing"; exit 1; }
+test -f .agents/rules/documentation.md || { echo "FAIL: .agents/rules/documentation.md missing"; exit 1; }
 
 # Archetype-specific checks
 case "$ARCHETYPE" in
