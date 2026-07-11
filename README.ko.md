@@ -6,8 +6,8 @@
 > GitHub Actions CI green까지 도달하도록 설계된 Python 3.13 프로젝트 템플릿.
 > 세팅 도중 사람 개입 없이 완주합니다.
 
-**실측 검증 완료**: SETUP.md 하나로 Claude Code가 35분 만에 CI green 달성
-([증거 run](https://github.com/KWONSEOK02/llm-setup-e2e17-python/actions/runs/24566234342)).
+**실측 검증 완료**: SETUP.md 하나로 Claude Code가 CI green 달성 (검증 당시 실측 약 35분,
+일회성 스캐폴드로 확인 후 임시 검증 레포는 삭제함).
 
 ---
 
@@ -71,13 +71,13 @@ Python 프로젝트를 처음 세팅할 때마다 같은 결정을 반복하게 
 
 ## 아키타입 선택
 
-SETUP.md Phase 1에서 하나를 고릅니다:
+SETUP.md 3절(Archetypes)에서 하나를 고릅니다:
 
 | 프로젝트 성격 | 선택할 아키타입 | 이유 |
 |---|---|---|
 | DTO, 데이터베이스, 비즈니스 로직이 있는 HTTP API | **FastAPI Service** | routers/services/repositories + AppException 계층 + Loguru + ErrorResponse 스키마 포함 |
 | 다른 프로젝트가 `pip install`할 패키지 (SDK, CLI 도구, 유틸 라이브러리) | **Library / CLI** | `__all__` public API + typer CLI 진입점 + `[project.scripts]` 포함 |
-| numpy, pandas, scipy를 쓰는 과학/분석 작업 | **Data-science** | 스텁 미비 구간에서 basedpyright strict 완화; syrupy 대신 numpy.testing 사용 |
+| numpy, pandas, scipy를 쓰는 과학/분석 작업 | **Data-science** | 스텁 미비 구간에서 basedpyright strict 완화; 부동소수점 회귀는 numpy.testing으로, 그 외 스냅샷은 syrupy 유지 |
 
 확신이 없다면 **Library / CLI**로 시작하세요. 가장 단순합니다. 아키타입은 나중에 마이그레이션할 수 있지만, 처음에 맞게 고르면 한 시간을 아낄 수 있습니다.
 
@@ -97,7 +97,7 @@ SETUP.md Phase 1에서 하나를 고릅니다:
 
 ## 관련 템플릿
 
-- [typescript-template](https://github.com/llm-setup-templates/typescript-template) — Next.js 15 + FSD 5계층
+- [typescript-template](https://github.com/llm-setup-templates/typescript-template) — Next.js 16 + FSD 5계층
 - [spring-template](https://github.com/llm-setup-templates/spring-template) — Spring Boot 3 + 레이어드 아키텍처
 
 ---

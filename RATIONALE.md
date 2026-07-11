@@ -179,7 +179,7 @@ framework-agnostic.
 
 ## Core differentiator
 
-This template is part of `llm-setup-prompts` — a **3-language unified
+This template is part of `llm-setup-templates` — a **3-language unified
 scaffolding workspace** (TypeScript + Spring + Python). All three
 language templates share the same 14-section SETUP.md skeleton,
 `.agents/rules/` structure, and Git workflow conventions. That

@@ -83,7 +83,7 @@ tests/regression/    ← floating-point regression tests (no syrupy)
 
 ### 3. Layer Dependency Isolation
 - `services/` MUST NOT import `sqlalchemy`, `fastapi`, `httpx`.
-- Import Linter contracts (see `examples/.importlinter`) define these boundaries.
+- Import Linter contracts (see `.importlinter` at the project root) define these boundaries.
 
 ### 4. Observability Isolation
 - `print()` and `pprint()` are banned (Ruff T201).
