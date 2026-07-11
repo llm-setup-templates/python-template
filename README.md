@@ -104,12 +104,13 @@ Not sure? Start with **Library / CLI** -- it is the simplest. You can migrate be
 
 ## What's inside
 
-- Setup flow: [SETUP.md](./SETUP.md) -- the LLM agent reads this top-to-bottom (14 phases)
+- Setup flow: [SETUP.md](./SETUP.md) -- the LLM agent reads this top-to-bottom (Phase 0 and numbered sections 1-8)
 - AI agent rules: [AGENTS.md](./AGENTS.md) -- tech stack, primary commands, verification checklist (Claude Code loads it via the CLAUDE.md import shell)
 - Architecture boundaries: [.agents/rules/architecture.md](./.agents/rules/architecture.md) -- src layout, import directions, exception hierarchy
 - Verification loop: [.agents/rules/verification-loop.md](./.agents/rules/verification-loop.md) -- the 6-slot fail-fast sequence
 - Test modification rules: [.agents/rules/test-modification.md](./.agents/rules/test-modification.md) -- when tests must change and how
 - Documentation modules: [.agents/rules/documentation.md](./.agents/rules/documentation.md) -- FR / RTM / ADR / RFC / reports
+- Requirements traceability: [docs/requirements/RTM.md](./docs/requirements/RTM.md) -- linted by `scripts/rtm-lint.sh` in `validate.sh` and, in generated projects, by `.github/workflows/rtm.yml`
 
 ---
 
