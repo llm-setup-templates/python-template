@@ -85,12 +85,13 @@ SETUP.md Phase 1에서 하나를 고릅니다:
 
 ## 구성 파일 안내
 
-- 세팅 흐름: [SETUP.md](./SETUP.md) — LLM 에이전트가 위에서 아래로 실행하는 문서 (14단계)
+- 세팅 흐름: [SETUP.md](./SETUP.md) — LLM 에이전트가 위에서 아래로 실행하는 문서 (Phase 0과 섹션 1-8)
 - AI 에이전트 규칙: [AGENTS.md](./AGENTS.md) — 기술 스택, 주요 명령어, 검증 체크리스트 (Claude Code는 CLAUDE.md import 껍데기로 로드)
 - 아키텍처 경계: [.agents/rules/architecture.md](./.agents/rules/architecture.md) — src 레이아웃, import 방향, 예외 계층
 - 검증 루프: [.agents/rules/verification-loop.md](./.agents/rules/verification-loop.md) — 6단계 fail-fast 시퀀스
 - 테스트 수정 규칙: [.agents/rules/test-modification.md](./.agents/rules/test-modification.md) — 테스트를 언제, 어떻게 수정하는가
 - 문서화 모듈: [.agents/rules/documentation.md](./.agents/rules/documentation.md) — FR / RTM / ADR / RFC / 리포트
+- 요구사항 추적: [docs/requirements/RTM.md](./docs/requirements/RTM.md) — `validate.sh`의 `scripts/rtm-lint.sh`와 생성 프로젝트의 `.github/workflows/rtm.yml`이 검사
 
 ---
 
