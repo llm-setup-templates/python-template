@@ -124,7 +124,7 @@ minimum. No Rule column may be untested.
 | unit | each decision-table Rule (R1 … RN) | `tests/unit/test_example_service_rules.py` |
 | integration | FastAPI route via `TestClient` + mocked service | `tests/integration/test_example_router.py` |
 | snapshot (syrupy) | `ExampleResponseSchema` serialization shape | `tests/integration/test_example_snapshot.py` |
-| architecture | Import Linter contracts (auto on `uv run lint-imports`) | `examples/.importlinter` + project's `.importlinter` |
+| architecture | Import Linter contracts (auto on `uv run lint-imports`) | `.importlinter` at the project root |
 
 ## Open questions
 

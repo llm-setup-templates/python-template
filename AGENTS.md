@@ -1,6 +1,6 @@
 # {{REPO_NAME}}
 
-> Generated from llm-setup-prompts/python-template.
+> Generated from llm-setup-templates/python-template.
 > Canonical rules body for all agents (Claude Code loads this via CLAUDE.md imports; Codex CLI loads it directly).
 
 ## 1. Project Overview
@@ -18,7 +18,7 @@ Python 3.13 project template: uv + Ruff + basedpyright strict + pytest (FastAPI 
 
 ## 3. Primary Commands
 - Install deps: `uv sync --all-extras --dev`
-- Format check: `uv run ruff format .`
+- Format check: `uv run ruff format --check .`
 - Lint: `uv run ruff check .`
 - Type check: `uv run basedpyright`
 - Architecture check: `uv run lint-imports`
@@ -28,7 +28,7 @@ Python 3.13 project template: uv + Ruff + basedpyright strict + pytest (FastAPI 
 
 ## 4. Architecture Summary
 See `.agents/rules/architecture.md` for full rules.
-src/ layout (uv init --package) with **fastapi-practice style layered architecture**. FastAPI archetype: `routers/ → services/ → repositories/` with `core/` providing HTTP status-based exception hierarchy (`AppException` → `NotFoundException` → `UserNotFoundException`), Loguru structured logging (JSON/console by environment), and ContextVar-based trace ID. Error responses unified via `ErrorResponse` schema + 4 global exception handlers (`handlers/exception.py`). Success responses use `response_model=Schema` directly (FastAPI standard — no wrapper). Import boundaries in `.agents/rules/architecture.md`; enforcement via Import Linter (`examples/.importlinter`). Type safety: basedpyright strict (CI). Ruff formatting + linting. Coverage gate 60%.
+src/ layout (uv init --package). The rules below describe the **FastAPI archetype**; the library and data-science archetypes use a simpler flat package layout without the router/service/exception stack. FastAPI archetype: `routers/ → services/ → repositories/` with `core/` providing HTTP status-based exception hierarchy (`AppException` → `NotFoundException` → `UserNotFoundException`), Loguru structured logging (JSON/console by environment), and ContextVar-based trace ID. Error responses unified via `ErrorResponse` schema + 4 global exception handlers (`handlers/exception.py`). Success responses use `response_model=Schema` directly (FastAPI standard — no wrapper). Import boundaries in `.agents/rules/architecture.md`; enforcement via Import Linter (`.importlinter` at the project root). Type safety: basedpyright strict (CI). Ruff formatting + linting. Coverage gate 60%.
 
 ## 5. Requirements traceability (RTM)
 

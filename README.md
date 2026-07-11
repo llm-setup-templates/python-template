@@ -90,13 +90,13 @@ All three yes -> read [SETUP.md](./SETUP.md).
 
 ## Archetype selection
 
-Phase 1 of SETUP.md asks you to pick one:
+Section 3 (Archetypes) of SETUP.md asks you to pick one:
 
 | If your project is... | Pick | Because |
 |---|---|---|
 | An HTTP API with DTOs, database, and business logic | **FastAPI Service** | bundles routers/services/repositories + AppException hierarchy + Loguru + ErrorResponse schema |
 | A reusable package others will `pip install` (SDK, CLI tool, utility lib) | **Library / CLI** | bundles `__all__` public API + typer CLI entry point + `[project.scripts]` |
-| Scientific or analytical work with numpy, pandas, scipy | **Data-science** | relaxes basedpyright strict where stubs are absent; swaps syrupy for numpy.testing |
+| Scientific or analytical work with numpy, pandas, scipy | **Data-science** | relaxes basedpyright strict where stubs are absent; uses numpy.testing for floating-point regression while keeping syrupy for other snapshots |
 
 Not sure? Start with **Library / CLI** -- it is the simplest. You can migrate between archetypes later, but picking right upfront saves an hour.
 
@@ -123,13 +123,13 @@ Skills are Claude Code agent prompts in `.claude/skills/`. Each skill is invoked
   Vendored verbatim from mattpocock/skills (MIT). See `UPSTREAM.md` + `_local-addendum.md`.
 - **`office-hours-ddd-discovery`** (`.claude/skills/office-hours-ddd-discovery/`) —
   Six forcing questions adapted for DDD bounded context discovery. Adapted from
-  garrytan/gstack (MIT). Note: archetype 없음 → companion 6Q×DDD doc deferred to Phase G.
+  garrytan/gstack (MIT). Note: Python ships this skill without a companion 6Q×DDD walkthrough doc.
 
 ---
 
 ## Related templates
 
-- [typescript-template](https://github.com/llm-setup-templates/typescript-template) -- Next.js 15 + FSD 5 layers
+- [typescript-template](https://github.com/llm-setup-templates/typescript-template) -- Next.js 16 + FSD 5 layers
 - [spring-template](https://github.com/llm-setup-templates/spring-template) -- Spring Boot 3 + layered architecture
 
 ---
